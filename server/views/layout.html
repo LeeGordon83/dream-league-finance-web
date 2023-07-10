@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  
+  <head>
+    <meta charset="utf-8"><link rel="shortcut icon" href="/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="theme-color" content="#000000">
+    <title>Dream League Finance</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+
+<body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+               
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+
+
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Finance Overviews<span class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li>Transaction</li>
+                            <li>Paid In</li>
+                            <li>Credit</li>
+                            <li>Balance Sheet</li>
+                            <li>Winnings Breakdown</li>
+                            <li>Individual Winnings</li>
+                            <li>Game Weeks</li>
+                        </ul>
+                    </li>
+
+                    <li>Home</li>
+                    <li>History</li>
+
+                    <li>Transaction</li>
+                    <!-- @if (User.IsInRole("Admin"))
+                    {
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Admin <span class="caret"></span></a>
+                            <ul class="dropdown-menu" role="menu">
+                                <li>@Html.ActionLink("Season", "seasonView", "Admin")</li>
+                                <li>@Html.ActionLink("Managers", "Managers", "Admin")</li>
+                                <li>@Html.ActionLink("Prizes", "Prizes", "Admin")</li>
+                                <li>@Html.ActionLink("Fees", "Fees", "Admin")</li>
+                                <li>@Html.ActionLink("Email Preview", "EmailViewSelect", "Admin")</li>
+                                <li>@Html.ActionLink("Send Email", "Send", "Admin")</li>
+                                <li>@Html.ActionLink("Run Weekly API", "RunWeeklyAPI", "Admin")</li>
+                                <li>@Html.ActionLink("Add Season History", "RunSeasonHistory", "History")</li>
+
+                            </ul>
+                        </li>
+                    } -->
+                    </ul>
+                
+            </div>
+        </div>
+    </div>
+    <div class="container body-content">
+
+        <div class="container row">
+            <hr />
+
+            <footer class="row">
+                <div class="col-md-10">
+
+                    <p>GeordieFoo</p>
+                    <address>
+                        <strong>Email:</strong>   <a href="mailto:dreamleaguefinance@hotmail.com?Subject=Dream League Finance Enquiry" target="_top">dreamleaguefinance@hotmail.com</a><br />
+                    </address>
+                 </div>
+</footer>
+        </div>
+        </div>
+
+
+    <script>
+        $(function () {
+
+            $.ajaxSetup({
+                cache: false
+            });
+        });
+    </script>
+</body>
+</html>
