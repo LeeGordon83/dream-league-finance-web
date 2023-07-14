@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start:dev": "nodemon server.js"
+    "start:dev": "nodemon index.js"
   },
   "repository": {
     "type": "git",
@@ -18,13 +18,30 @@
   },
   "homepage": "https://github.com/LeeGordon83/dreamleaguefinancenode#readme",
   "dependencies": {
-    "@hapi/hapi": "^21.3.0",
+    "@hapi/h2o2": "^10.0.2",
+    "@hapi/hapi": "^21.3.2",
+    "@hapi/inert": "^7.1.0",
+    "@hapi/joi": "^17.1.1",
+    "@hapi/vision": "^7.0.2",
     "bootstrap": "^5.3.0",
-    "hapi": "^18.1.0",
     "jquery": "^3.7.0",
+    "nunjucks": "^3.2.4",
     "pg": "^8.11.1",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.32.1",
     "sequelize-cli": "^6.6.1"
+  },
+  "standard": {
+    "ignore": [
+      "server/dist",
+      "service-down"
+    ]
+  },
+  "devDependencies": {
+    "eslint": "^8.44.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-n": "^16.0.1",
+    "eslint-plugin-promise": "^6.1.1"
   }
 }

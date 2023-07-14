@@ -1,0 +1,74 @@
+body {
+  padding-top: 50px;
+  padding-bottom: 20px;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+/* Override the default bootstrap behavior where horizontal description lists 
+ will truncate terms that are too long to fit in the left column 
+*/
+.dl-horizontal dt {
+  white-space: normal;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+input,
+select,
+textarea {
+  max-width: 280px;
+}
+
+.jumbotron {
+  background-image:  url('../Images/FootballPitch.jpg');
+  background-size: cover;
+  color:white;    
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+
+}
+
+
+
+.tableNoLine {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 20px;
+}
+
+  .tableNoLine > thead > tr > th,
+  .tableNoLine > tbody > tr > th,
+  .tableNoLine > tfoot > tr > th,
+  .tableNoLine > thead > tr > td,
+  .tableNoLine > tbody > tr > td,
+  .tableNoLine > tfoot > tr > td {
+      padding: 8px;
+      line-height: 1.42857143;
+      vertical-align: top;
+      border-top: none;
+  }
+
+  .tableNoLine > thead > tr > th {
+      vertical-align: bottom;
+      
+  }
+
+  .tableNoLine > caption + thead > tr:first-child > th,
+  .tableNoLine > colgroup + thead > tr:first-child > th,
+  .tableNoLine > thead:first-child > tr:first-child > th,
+  .tableNoLine > caption + thead > tr:first-child > td,
+  .tableNoLine > colgroup + thead > tr:first-child > td,
+  .tableNoLine > thead:first-child > tr:first-child > td {
+      border-top: 0;
+  }
+
+  .tableNoLine > tbody + tbody {
+      border-top: none;
+  }
+
+  .tableNoLine .table {
+      background-color: #ffffff;
+  }
