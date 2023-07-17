@@ -6,7 +6,7 @@ module.exports = {
   plugin: require('@hapi/vision'),
   options: {
     engines: {
-      html: {
+      njk: {
         compile: (src, options) => {
           const template = nunjucks.compile(src, options.environment)
 
@@ -17,17 +17,17 @@ module.exports = {
         prepare: (options, next) => {
           options.compileOptions.environment = nunjucks.configure(path.join(options.relativeTo || process.cwd(), options.path), {
             autoescape: true,
-            watch: config.isDev
+            watch: false
           })
           return next()
         }
       }
     },
-    path: '../views',
+    path: 'app/views',
     isCached: !config.isDev,
     context: {
       assetPath: '/assets',
-      serviceName: config.appName
+      appName: config.appName
     }
   }
 }

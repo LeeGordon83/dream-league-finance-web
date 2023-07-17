@@ -1,5 +1,4 @@
 body {
-  padding-top: 50px;
   padding-bottom: 20px;
 }
 
@@ -24,14 +23,17 @@ textarea {
 }
 
 .jumbotron {
-  background-image:  url('../Images/FootballPitch.jpg');
+  background-image:  url('../assets/FootballPitch.jpg');
   background-size: cover;
   color:white;    
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 
 }
 
-
+@media(max-width:650px) {
+  .no-mobile {
+    display: none;
+  }
 
 .tableNoLine {
   width: 100%;
