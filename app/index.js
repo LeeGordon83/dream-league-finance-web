@@ -1,33 +1,12 @@
-const hapi = require('@hapi/hapi')
-const config = require('./config')
+const createServer = require('./server')
+const pkg = require('../package.json')
 
-// Create a new Hapi server instance
-async function createServer () {
-  // Create the hapi server
-  const server = hapi.server({
-    port: config.port,
-    routes: {
-      validate: {
-        options: {
-          abortEarly: false
-        }
-      }
-    },
-    router: {
-      stripTrailingSlash: true
-    }
+createServer()
+  .then((server) => {
+    server.start()
+    console.log('Dream League Finance (%s) running on %s', pkg.version, server.info.uri)
   })
-
-  // Register the plugins
-  await server.register(require('@hapi/inert'))
-  await server.register(require('@hapi/h2o2'))
-  await server.register(require('./plugins/views'))
-  await server.register(require('./plugins/router'))
-  // await server.register(require('./plugins/error-pages'))
-  // await server.register(require('./plugins/session'))
-  // await server.register(require('./plugins/logging'))
-
-  return server
-}
-
-module.exports = createServer
+  .catch(err => {
+    console.log(err)
+    process.exit(1)
+  })

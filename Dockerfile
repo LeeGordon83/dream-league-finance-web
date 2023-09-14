@@ -1,20 +1,28 @@
-# Use the official Node.js 18 base image
-FROM node:18
+# Development
+FROM node:18-alpine AS development
+ENV NODE_ENV development
+ARG PORT=3000
+ENV PORT ${PORT}
+EXPOSE ${PORT} 9229
+# Set global npm dependencies to be stored under the node user directory
+ENV NPM_CONFIG_PREFIX=/home/node/.npm-global
+ENV PATH=$PATH:/home/node/.npm-global/bin
 
-# Set the working directory in the container
-WORKDIR /app
+# Add Git
+RUN apk update && \
+    apk add --no-cache git
 
-# Copy package.json and package-lock.json to the container
-COPY package*.json ./
-
-# Install app dependencies
+USER node
+WORKDIR /home/node
+COPY --chown=node:node package*.json ./
 RUN npm install
+COPY --chown=node:node ./app ./app
+COPY --chown=node:node ./test ./test
+COPY --chown=node:node ./.git ./.git
+CMD [ "npm", "run", "start:watch" ]
 
-# Copy the app files to the container
-COPY . .
-
-# Expose port 3000
-EXPOSE 3000
-
-# Start the Hapi.js server
-CMD [ "node", "index.js" ]
+# Production
+FROM development AS production
+ENV NODE_ENV production
+RUN npm ci
+CMD [ "node", "app" ]

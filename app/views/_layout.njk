@@ -5,6 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#000000">
+    {# {% if cookiesPolicy and cookiesPolicy.analytics %}
+      <!-- Global site tag (gtag.js) - Google Analytics -->
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-C35GGT2X1B"></script>
+      <script src="{{ assetPath }}/google-analytics.js"></script>
+    {% endif %} #}
     <title>{{ appName }}</title>
     <link rel="icon" type="image/x-icon" href="{{ assetPath }}/favicon.ico"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -30,10 +35,11 @@
   </head>
 
 <body>
-        {# {% if cookiesPolicy and not cookiesPolicy.confirmed %}
+
+    {% if cookiesPolicy and not cookiesPolicy.confirmed %}
       {% include "./cookies/_cookie-banner.njk" %}
     {% endif %}
-    {% block bodyStart %}{% endblock %} #}
+    {% block bodyStart %}{% endblock %}
     <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark box-shadow mb-3">
         <a class="navbar-brand" href="/">{{ appName }}</a>
               <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse"
@@ -43,17 +49,16 @@
             <div class="navbar-collapse collapse d-sm-inline-flex">
         <ul class="navbar-nav flex-grow-1">
           <li class="nav-item dropdown">
-                          <a class="nav-link dropdown-toggle text-light" href="#" id="navbarDropdown" role="button"
-            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            Finance Overviews
+          <a class="nav-link dropdown-toggle text-light" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Finance Overviews
           </a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <a class="dropdown-item" href="/finance/transaction">Transaction</a>
+                <a class="dropdown-item" href="/finance/all-transactions">All Transactions</a>
                 <a class="dropdown-item" href="/finance/paid-in">Paid In</a>
                 <a class="dropdown-item" href="/finance/credit">Credit</a>
-                <a class="dropdown-item" href="/finance/balance">Balance Sheet</a>
-                <a class="dropdown-item" href="/finance/breakdown">Winnings Breakdown</a>
-                <a class="dropdown-item" href="/finance/individual">Individual Winnings</a>
+                <a class="dropdown-item" href="/finance/balance-sheet">Balance Sheet</a>
+                <a class="dropdown-item" href="/finance/winnings">Winnings Breakdown</a>
+                <a class="dropdown-item" href="/finance/individual-winnings">Individual Winnings</a>
                 <a class="dropdown-item" href="/finance/game-weeks">Game Weeks</a>
               </div>
             </li>
@@ -61,33 +66,30 @@
             <a class="nav-link text-light" href="/about">About</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link text-light" href="/about">History</a>
+            <a class="nav-link text-light" href="/history">History</a>
           </li>
-                    <li class="nav-item dropdown">
-                          <a class="nav-link dropdown-toggle text-light" href="#" id="navbarDropdown" role="button"
-            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            Transaction
-          </a>
+          <li class="nav-item">
+            <a class="nav-link text-light" href="/transaction/select-transaction">Transaction</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle text-light" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Admin</a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                <a class="dropdown-item" href="/finance/transaction">Season</a>
-                <a class="dropdown-item" href="/finance/paid-in">Managers</a>
-                <a class="dropdown-item" href="/finance/credit">Prizes</a>
-                <a class="dropdown-item" href="/finance/balance">Fees</a>
-                <a class="dropdown-item" href="/finance/breakdown">Email Preview</a>
-                <a class="dropdown-item" href="/finance/individual">Send Email</a>
-                <a class="dropdown-item" href="/finance/game-weeks">Run Weekly Update</a>
-                <a class="dropdown-item" href="/finance/game-weeks">Add Season History</a>
+                <a class="dropdown-item" href="/admin/season">Season</a>
+                <a class="dropdown-item" href="/admin/managers">Managers</a>
+                <a class="dropdown-item" href="/admin/prizes">Prizes</a>
+                <a class="dropdown-item" href="/admin/fees">Fees</a>
+                <a class="dropdown-item" href="/admin/email">Emails</a>
+                <a class="dropdown-item" href="/admin/weekly-update">Run Weekly Update</a>
+                <a class="dropdown-item" href="/admin/add-history">Add Season History</a>
               </div>
             </li>
         </ul>
         {% include "_login.njk" %}
-        </div>
-        </nav>
+          </div>
+      </nav>
      <div class="container">
       {% block content %}{% endblock %}
       {% block bodyEnd %}{% endblock %}
-
-
       <hr/>
       <footer>
         <div class="row">
@@ -95,13 +97,13 @@
             <p>&copy; {{ currentYear }} - Lee Gordon</p>
             <address>
               <strong>Email:</strong>
-              <a href="mailto:dreamleaguefinance@hotmail.com?Subject=Dream League Enquiry"
+              <a href="mailto:dreamleaguefinance@hotmail.com?Subject=Dream League Finance Enquiry"
               target="_top">dreamleaguefinance@hotmail.com</a><br/>
             </address>
           </div>
         <div class="row">
           <div class="col-md-10">
-            <a href="/cookies">Cookies Info</a>
+            <a href="/cookies">Cookies</a>
           </div>
         </div>
       </footer>

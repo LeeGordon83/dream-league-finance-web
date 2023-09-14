@@ -1,9 +1,9 @@
 version: '3.8'
 services:
-  dreamleaguefinance:
+  dream-league-finance-web:
     build: .
-    image: dreamleaguefinance
-    container_name: dreamleaguefinance
+    image: dream-league-finance-web
+    container_name: dream-league-finance-web
     environment: 
       JWT_SECRET: secret
       API_HOST: http://dream-league-finance-api:3001

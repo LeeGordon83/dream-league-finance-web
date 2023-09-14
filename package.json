@@ -1,39 +1,37 @@
 {
-  "name": "dreamleaguefinancenode",
+  "name": "dream-league-finance-web",
   "version": "1.0.0",
-  "description": "DL finance app",
-  "main": "index.js",
+  "description": "Dream League Finance web front end",
+  "main": "app/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app/index.js",
+    "test": "jest --runInBand --forceExit",
     "start:dev": "nodemon index.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/LeeGordon83/dreamleaguefinancenode.git"
+    "url": "git+https://github.com/LeeGordon83/dream-league-finance-web.git"
   },
   "author": "LG",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/LeeGordon83/dreamleaguefinancenode/issues"
+    "url": "https://github.com/LeeGordon83/dream-league-finance-web/issues"
   },
-  "homepage": "https://github.com/LeeGordon83/dreamleaguefinancenode#readme",
+  "homepage": "https://github.com/LeeGordon83/dream-league-finance-web#readme",
   "dependencies": {
+    "@hapi/boom": "^10.0.1",
+    "@hapi/crumb": "^9.0.1",
     "@hapi/h2o2": "^10.0.2",
     "@hapi/hapi": "^21.3.2",
     "@hapi/inert": "^7.1.0",
-    "@hapi/joi": "^17.1.1",
     "@hapi/vision": "^7.0.2",
+    "@hapi/wreck": "^18.0.1",
     "bootstrap": "^5.3.0",
-    "jquery": "^3.7.0",
+    "hapi-auth-jwt2": "^10.4.0",
+    "hapi-pino": "^12.1.0",
+    "joi": "^17.10.1",
     "nunjucks": "^3.2.4",
-    "pg": "^8.11.1",
-    "pg-hstore": "^2.3.4"
-  },
-  "standard": {
-    "ignore": [
-      "server/dist",
-      "service-down"
-    ]
+    "qs": "^6.11.2"
   },
   "devDependencies": {
     "eslint": "^8.44.0",
@@ -41,6 +39,22 @@
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-n": "^16.0.1",
     "eslint-plugin-promise": "^6.1.1",
+    "jest": "^29.6.4",
     "nodemon": "^3.0.1"
+  },
+  "standard": {
+    "globals": [
+      "describe",
+      "beforeEach",
+      "expect",
+      "test",
+      "afterEach",
+      "jest",
+      "beforeAll",
+      "afterAll",
+      "$",
+      "XMLHttpRequest",
+      "dataLayer"
+    ]
   }
 }

@@ -11,7 +11,13 @@
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}/index.js"
-    }
+      "program": "${workspaceFolder}/app/index.js"
+    },
+    {"type": "node",
+    "request": "launch",
+    "name": "debug unit tests",
+    "program": "${workspaceFolder}/test/routes/route.test.js",
+    "envFile": "${workspaceFolder}/.env"
+  }
   ]
 }
