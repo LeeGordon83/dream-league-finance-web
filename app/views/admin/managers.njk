@@ -2,8 +2,45 @@
 
 {% block content %}
 
-<h2>Managers</h2>
-<br />
+  <h2>Managers</h2>
+  <br/>
 
+  <table class="table table-hover table-sm small">
+    <tr>
+
+      <th>
+      Manager Name
+      </th>
+      <th>
+      Manager Email
+      </th>
+      <th></th>
+    </tr>
+
+    {% for manager in managers %}
+      <tr>
+
+        <td>
+          {{ manager.name }}
+        </td>
+        <td>
+          {% for email in manager.emails %}
+
+            {{ email.address }}
+            <br/>
+          {% endfor %}
+        </td>
+
+        <td style="text-align:center">
+          <a href="/admin/editTransaction?TransactionId=item.TransactionId">Edit</a> |
+          <a href="/allTransactions/deleteTransaction?TransactionId=item.TransactionId">Delete</a>
+        </td>
+
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<br/>
+<a href="/allTransactions/deleteTransaction?TransactionId=item.TransactionId">Add Manager</a>
 
 {% endblock %}

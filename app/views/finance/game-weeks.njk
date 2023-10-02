@@ -2,9 +2,42 @@
 
 {% block content %}
 
-<h2>Game Week View</h2>
+  <h2>Game Week View</h2>
 
-<br />
+  <br/>
 
+  <table class="table table-hover table-sm small">
+    <tr>
+      <th style="text-align:center">
+            Week Number
+        </th>
+      <th style="text-align:center">
+            Week Start Date
+        </th>
+      <th style="text-align:center">
+            Week End Date
+        </th>
+      <th style="text-align:center">
+            Week Completed?
+        </th>
+    </tr>
 
+    {% for week in gameWeeks %}
+      <tr>
+        <td style="text-align:center">
+          {{ week.weekId }}
+        </td>
+        <td style="text-align:center">
+          {{ week.start | formatDate }}
+        </td>
+        <td style="text-align:center">
+          {{ week.end | formatDate }}
+        </td>
+        <td style="text-align:center">
+          <input type="checkbox" {{ week.complete }} disabled>
+        </td>
+
+      </tr>
+    {% endfor %}
+  </table>
 {% endblock %}

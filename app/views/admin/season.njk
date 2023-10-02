@@ -2,8 +2,24 @@
 
 {% block content %}
 
-<h2>Season</h2>
-<br />
+  <h2>Season</h2>
+  <br/>
 
+  {% if season.weeks | length %}
+    {% include "./admin/_currentSeason.njk" %}
+  {% else %}
+    <form method="POST" action="admin/season">
+      <input type="hidden" name="crumb" value="{{crumb}}"/>
+      <div class="form-group">
+        <label for="startDate">Week Start Date</label>
+        <input type="date" class="form-control" id="startDate" name="startDate">
+      </div>
+      <div class="form-group">
+        <label for="weekNum">Number of Weeks</label>
+        <input type="number" class="form-control" id="weekNum" name="weekNum" min="1" max="50">
+      </div>
+      <button type="submit" class="btn btn-primary" style="margin-top:10px">Submit</button>
+    </form>
+  {% endif %}
 
 {% endblock %}

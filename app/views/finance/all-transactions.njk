@@ -2,8 +2,84 @@
 
 {% block content %}
 
-<h2>All Transactions</h2>
+  <h2>All Transactions</h2>
 
-<br />
+  <br/>
 
+  <form method="POST" action="finance/all-transactions">
+    <input type="hidden" name="crumb" value="{{crumb}}"/>
+    <div class="form-group">
+      <h4 style="margin-bottom:10px">Filter By: -</h4>
+      <h5 style="margin-bottom:10px">Manager</h5>
+      <select name="managerSelect" style="width: 200px; height: 30px; margin-bottom:20px">
+        {% for manager in allTransactions.managers %}
+          <option value="{{ manager.managerId }}">{{ manager.name }}</option>
+        {% endfor %}
+      </select>
+
+      <h5 style="margin-bottom:10px">Month</h5>
+      <select name="monthSelect" style="width: 200px; height: 30px; margin-bottom:20px">
+        {% for month in allTransactions.months %}
+          <option value="{{ month.id }}">{{ month }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+<br/>
+  <table class="table table-hover table-sm small">
+    <tr>
+      <th style="text-align:center">
+            Manager Name
+        </th>
+      <th style="text-align:center">
+            Value
+        </th>
+      <th style="text-align:center">
+            Transaction Type
+        </th>
+      <th style="text-align:center">
+            Transaction Date
+        </th>
+      <th style="text-align:center">
+            Week Number
+        </th>
+      <th style="text-align:center">
+            Notes
+        </th>
+
+      <th style="text-align:center"></th>
+
+    </tr>
+
+    {% for transaction in allTransactions.transactions %}
+      <tr>
+        <td style="text-align:center">
+          {{ transaction.manager.name }}
+        </td>
+        <td style="text-align:center">
+          £{{ transaction.value }}
+        </td>
+        <td style="text-align:center">
+          {{ transaction.transactionType.type }}
+        </td>
+        <td style="text-align:center">
+          {{ transaction.date | formatDate }}
+        </td>
+        <td style="text-align:center">
+          {{ transaction.weekId }}
+        </td>
+        <td style="text-align:center">
+          {{ transaction.notes }}
+        </td>
+
+        <td style="text-align:center">
+          <a href="/allTransactions/editTransaction?TransactionId=item.TransactionId">Edit</a> |
+          <a href="/allTransactions/deleteTransaction?TransactionId=item.TransactionId">Delete</a>
+        </td>
+
+      </tr>
+    {% endfor %}
+
+  </table>
 {% endblock %}

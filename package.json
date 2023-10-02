@@ -30,6 +30,7 @@
     "hapi-auth-jwt2": "^10.4.0",
     "hapi-pino": "^12.1.0",
     "joi": "^17.10.1",
+    "moment-timezone": "^0.5.43",
     "nunjucks": "^3.2.4",
     "qs": "^6.11.2"
   },

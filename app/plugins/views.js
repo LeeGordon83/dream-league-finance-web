@@ -1,6 +1,7 @@
 const nunjucks = require('nunjucks')
 const path = require('path')
 const config = require('../config')
+const util = require('../util')
 
 module.exports = {
   plugin: require('@hapi/vision'),
@@ -15,10 +16,11 @@ module.exports = {
           }
         },
         prepare: (options, next) => {
-          options.compileOptions.environment = nunjucks.configure(path.join(options.relativeTo || process.cwd(), options.path), {
+          const env = options.compileOptions.environment = nunjucks.configure(path.join(options.relativeTo || process.cwd(), options.path), {
             autoescape: true,
             watch: false
           })
+          env.addFilter('formatDate', util.formatDate)
           return next()
         }
       }

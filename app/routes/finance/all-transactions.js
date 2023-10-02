@@ -1,9 +1,10 @@
+const api = require('../../api')
+
 module.exports = [{
   method: 'GET',
   path: '/finance/all-transactions',
-  config: {
-  },
   handler: async (request, h) => {
-    return h.view('finance/all-transactions')
+    const allTransactions = await api.get('/finance/all-transactions', request.dl_token)
+    return h.view('finance/all-transactions', { allTransactions })
   }
 }]

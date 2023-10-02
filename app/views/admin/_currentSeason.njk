@@ -1,0 +1,20 @@
+<h4>Current Season</h4>
+<br/>
+
+<div class="form-group">
+  <label for="startDate">Week Start Date</label>
+  <p class="form-control-static"> {{ season.start | formatDate }} </p>
+</div>
+
+<div class="form-group">
+  <label for="startDate">Number of Weeks</label>
+  <p class="form-control-static">  {{ season.weeks|length }} </p>
+</div>
+
+<div class="form-group">
+  <label for="startDate">Number of Managers</label>
+  <p class="form-control-static">{{ season.managers }}</p>
+</div>
+
+<input type="submit" class="btn btn-primary" value="End Season" onclick="admin/season">
+
