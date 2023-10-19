@@ -2,8 +2,36 @@
 
 {% block content %}
 
-<h2>Fees</h2>
-<br />
+  <h2>Fees</h2>
+  <br/>
 
+  <table class="table table-hover table-sm small">
+    <tr>
+      <th style="text-align:center">
+            Fee Type
+        </th>
+      <th style="text-align:center">
+            Amount
+        </th>
+      <th style="text-align:center"></th>
+    </tr>
 
+    {% for fee in fees %}
+      <tr>
+        <td style="text-align:center">
+          {{ fee.type }}
+        </td>
+        <td style="text-align:center">
+          {{ fee.amount }}
+        </td>
+        <td style="text-align:center">
+            Edit
+        </td>
+
+      </tr>
+    {% endfor %}
+
+  </table>
+
+  <a href="/admin/fees/create">Create</a>
 {% endblock %}

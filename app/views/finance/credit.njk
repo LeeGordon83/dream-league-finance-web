@@ -2,8 +2,36 @@
 
 {% block content %}
 
-<h2>Credit Overview</h2>
+  <h2>Credit Overview</h2>
 
-<br />
+  <br/>
 
-{% endblock %}
+  <table class="table table-hover table-sm small">
+    <tr>
+      <th style="border-right: 1px solid black; background-color: black;"></th>
+      {% for month in credit.months %}
+        <th style="text-align:center">
+          {{ month }}
+        </th>
+      {% endfor %}
+      <th style="text-align:center">End of Season</th>
+    </tr>
+
+    {% for managerIndex in credit.managerCreditByMonth %}
+      <tr>
+        <td style="text-align:center; font-weight: bold;">{{ managerIndex.manager.name }}</td>
+        {% for month in managerIndex.managerCreditByMonth %}
+          <td style="text-align:center">{{ month.monthCredit }}</td>
+        {% endfor %}
+        <td></td>
+      </tr>
+    {% endfor %}
+    <tr>
+      <td style="text-align:center; font-weight: bold;">Cost Per Month</td>
+      {% for month in credit.owed.groupedOwed %}
+        <td style="text-align:center">{{ month.owedSubtotal }}</td>
+      {% endfor %}
+      <td style="text-align:center">{{ credit.owed.totalOwed }}</td>
+      <tr></table>
+
+    {% endblock %}

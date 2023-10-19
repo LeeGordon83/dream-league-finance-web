@@ -2,8 +2,83 @@
 
 {% block content %}
 
-<h2>Prizes</h2>
-<br />
+  <div class="row">
+    <div class="col-md-6">
+      <div class="panel panel-primary">
+        <div class="panel panel-heading">
+          <h3 style="text-align:center">League Prizes</h3>
+        </div>
+        <div class="panel-body">
 
+          <table class="table table-hover table-sm small" style="margin-left:auto;margin-right:auto;">
+            <tr>
+              <th style="text-align:center">
+            Prize Type
+        </th>
+              <th style="text-align:center">
+            Prize Amount
+        </th>
+              <th style="text-align:center"></th>
+            </tr>
 
+            {% for prize in prizes %}
+              {% if prize.league %}
+                <tr>
+                  <td style="text-align:center">
+                    {{ prize.type }}
+                  </td>
+                  <td style="text-align:center">
+                    {{ prize.amount}}
+                  </td>
+                  <td style="text-align:center">
+                Edit
+            </td>
+                </tr>
+              {% endif %}
+
+            {% endfor %}
+
+          </table>
+        </div>
+
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="panel panel-primary">
+        <div class="panel panel-heading">
+          <h3 style="text-align:center">Other Prizes</h3>
+        </div>
+        <div class="panel-body">
+          <table class="table table-hover table-sm small" style="margin-left:auto;margin-right:auto;">
+            <tr>
+              <th style="text-align:center">
+            Prize Type
+        </th>
+              <th style="text-align:center">
+            Prize Amount
+        </th>
+              <th style="text-align:center"></th>
+            </tr>
+
+            {% for prize in prizes %}
+              {% if not prize.league %}
+                <tr>
+                  <td style="text-align:center">
+                    {{ prize.type }}
+                  </td>
+                  <td style="text-align:center">
+                    {{ prize.amount }}
+                  </td>
+                  <td style="text-align:center">Edit</td>
+                </tr>
+              {% endif %}
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <a href="/admin/prizes/create">Create</a>
 {% endblock %}
