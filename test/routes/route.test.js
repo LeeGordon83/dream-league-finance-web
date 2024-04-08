@@ -291,4 +291,52 @@ describe('GET /', () => {
     expect(response.headers['content-type']).toContain('text/html')
     expect(response.result).toContain('Weekly Prize')
   })
+  test('returns the about view', async () => {
+    const request = {
+      method: 'GET',
+      url: '/about'
+    }
+
+    const response = await server.inject(request)
+
+    expect(response.statusCode).toBe(200)
+    expect(response.headers['content-type']).toContain('text/html')
+    expect(response.result).toContain('About')
+  })
+  test('returns the history view', async () => {
+    const request = {
+      method: 'GET',
+      url: '/history'
+    }
+
+    const response = await server.inject(request)
+
+    expect(response.statusCode).toBe(200)
+    expect(response.headers['content-type']).toContain('text/html')
+    expect(response.result).toContain('History')
+  })
+  test('returns the cookies view', async () => {
+    const request = {
+      method: 'GET',
+      url: '/cookies'
+    }
+
+    const response = await server.inject(request)
+
+    expect(response.statusCode).toBe(200)
+    expect(response.headers['content-type']).toContain('text/html')
+    expect(response.result).toContain('Cookies')
+  })
+  test('returns the transaction adhoc view', async () => {
+    const request = {
+      method: 'GET',
+      url: '/transaction/ad-hoc'
+    }
+
+    const response = await server.inject(request)
+
+    expect(response.statusCode).toBe(200)
+    expect(response.headers['content-type']).toContain('text/html')
+    expect(response.result).toContain('Ad-Hoc Payment')
+  })
 })

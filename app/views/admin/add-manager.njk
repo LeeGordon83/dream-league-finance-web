@@ -1,0 +1,24 @@
+{% extends '_layout.njk' %}
+
+{% block content %}
+
+  <h2>Add Manager</h2>
+  <br/>
+  <form method="POST" action="/admin/add-manager">
+    <input type="hidden" name="crumb" value="{{crumb}}"/>
+    <div class="form-group">
+      <label for="managerName">Manager Name</label>
+      <input type="text" class="form-control" id="name" name="name" required>
+    </div>
+    <div class="form-group">
+      <label for="emailPrimary">Primary Email</label>
+      <input type="email" class="form-control" id="emailPrimary" name="emailPrimary" required>
+    </div>
+    <div class="form-group">
+      <label for="emailSecondary">Secondary Email</label>
+      <input type="email" class="form-control" id="emailSecondary" name="emailSecondary" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Add Manager</button>
+  </form>
+
+{% endblock %}

@@ -72,7 +72,7 @@
 
   <h3>Change your cookie settings</h3>
   <form action="/cookies" method="POST" novalidate>
-  Do you want to accept analytics cookies?
+  <p>Do you want to accept analytics cookies?</p>
   <div class="form-check">
       <input class="form-check-input" type="radio" name="analytics" id="analytics" value="true" {% if cookiesPolicy.analytics %}checked{% endif %}>
       <label class="form-check-label" for="analytics">
@@ -85,7 +85,7 @@
       No
     </label>
     </div>
-    <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="submit" class="btn btn-primary" style="margin-top:10px">Submit</button>
   </form>
 
 {% endblock %}

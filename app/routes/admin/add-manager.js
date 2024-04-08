@@ -3,25 +3,24 @@ const joi = require('joi')
 
 module.exports = [{
   method: 'GET',
-  path: '/transaction/adhoc',
+  path: '/admin/add-manager',
   config: {
   },
   handler: async (request, h) => {
-    const managers = await api.get('/transaction/adhoc', request.dl_token)
-    return h.view('transaction/adhoc', { managers })
+    return h.view('admin/add-manager')
   }
 }, {
   method: 'POST',
-  path: '/transaction/adhoc',
+  path: '/admin/add-manager',
   options: {
     validate: {
       payload: joi.object({
-        amountPaid: joi.number().required(),
-        managerSelect: joi.number().required(),
-        notes: joi.string().allow('', null)
+        managerName: joi.string().required(),
+        primaryEmail: joi.string().required(),
+        secondaryEmail: joi.string().allow('', null)
       }),
       failAction: async (request, h, error) => {
-        return h.view('transaction/adhoc', { error, adhoc: request.payload }).code(400).takeover()
+        return h.view('admin/add-manager', { error, adhoc: request.payload }).code(400).takeover()
       }
     },
     handler: async (request, h) => {

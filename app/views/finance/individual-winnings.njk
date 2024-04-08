@@ -2,8 +2,48 @@
 
 {% block content %}
 
-  <h2>Individual Winnings</h2>
+    <h2>Individual Winnings</h2>
 
-  <br/>
+    <br/>
+
+    <table class="table table-hover table-sm small">
+        <tr>
+            <th style="text-align:center">Manager</th>
+            <th style="text-align:center">Fivers</th>
+            <th style="text-align:center">Weekly</th>
+            <th style="text-align:center">Jackpot</th>
+            <th style="text-align:center">League and Cup</th>
+            <th style="text-align:center">Total (Overall Won)</th>
+            <th></th>
+            <th style="text-align:center">Payout</th>
+
+        </tr>
+        {% for manager in individualWinnings %}
+            <tr>
+                <td style="text-align:center">
+                    {{ manager.manager }}
+                </td>
+                <td style="text-align:center">
+                    {{ manager.fivers }}
+                </td>
+                <td style="text-align:center">
+                    {{ manager.weekly }}
+                </td>
+                <td style="text-align:center">
+                    {{ manager.jackpot }}
+                </td>
+                <td style="text-align:center">
+                    {{ manager.leaguecup }}
+                </td>
+                <td style="text-align:center">
+                    {{ manager.total }}
+                </td>
+                <td></td>
+                <td style="text-align:center">
+                    £{{ manager.payout }}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
 
 {% endblock %}

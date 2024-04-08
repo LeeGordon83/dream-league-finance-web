@@ -25,6 +25,7 @@ const routes = [].concat(
   require('../routes/admin/email'),
   require('../routes/admin/fees'),
   require('../routes/admin/managers'),
+  require('../routes/admin/add-manager'),
   require('../routes/admin/prizes'),
   require('../routes/admin/season')
   // require('../routes/admin/add-history'),

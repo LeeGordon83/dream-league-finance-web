@@ -2,28 +2,27 @@
 
 {% block content %}
 
-<h2>Transaction Menu</h2>
-<hr />
+    <h2>Transaction Menu</h2>
+    <hr/>
 
-<br>
-<form method="post" action="/transaction/select-transaction">
-<input type="hidden" name="crumb" value="{{crumb}}"/>
-    <div class="form-horizontal col-md-10">
-        <div class="form-group">
-            <label class="form-label" for="select-box">Transaction Type: - </label>
-            <select class="form-control" id="select-box" name="transactionType">
-                <option disabled selected> -- select an option -- </option>
-                <option disabled style="font-weight: bold; border-bottom: 1px solid gray;">Incoming</option>
-                <option value="adhoc">Ad-Hoc Payment</option>
-                <option disabled style="font-weight: bold; border-bottom: 1px solid gray;">Outgoing</option>
-                <option value="weekly">Weekly Prize</option>
-                <option value="fivers">Fivers</option>
-                <option value="jackpot">Jackpot</option>
-                <option value="end">League/Cups</option>
-            </select>
-            <br />
-                <input class="button" type="submit" value="Select" />
+    <form method="post" action="/transaction/select-transaction">
+        <input type="hidden" name="crumb" value="{{crumb}}"/>
+        <div class="form-horizontal col-md-10">
+            <div class="form-group">
+                <label for="select-box">Transaction Type</label>
+                <select class="form-control" id="select-box" name="transactionType">
+                    <option disabled selected> -- select an option -- </option>
+                    <option disabled style="font-weight: bold; border-bottom: 1px solid gray;">Incoming</option>
+                    <option value="adhoc">Ad-Hoc Payment</option>
+                    <option disabled style="font-weight: bold; border-bottom: 1px solid gray;">Outgoing</option>
+                    <option value="weekly">Weekly Prize</option>
+                    <option value="fivers">Fivers</option>
+                    <option value="jackpot">Jackpot</option>
+                    <option value="end">League/Cups</option>
+                </select>
+                <br/>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
         </div>
-    </div>
-</form>
+    </form>
 {% endblock %}

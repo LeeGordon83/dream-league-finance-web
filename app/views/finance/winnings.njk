@@ -2,8 +2,37 @@
 
 {% block content %}
 
-<h2>Winnings Overview</h2>
+    <h2>Winnings Overview</h2>
 
-<br />
+    <br/>
+
+    <!-- https://getbootstrap.com/docs/5.0/components/navs-tabs/#javascript-behavior -->
+
+    <ul class="nav nav-tabs" id="winningsTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="fivers-meeting-tab" data-toggle="tab" data-target="#fivers-meeting" type="button" role="tab" aria-controls="home" aria-selected="true">Fivers By Meeting</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="fivers-manager-tab" data-toggle="tab" data-target="#fivers-manager" type="button" role="tab" aria-controls="home" aria-selected="false">Fivers By Manager</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="weekly-winners-tab" data-toggle="tab" data-target="#weekly-winners" type="button" role="tab" aria-controls="home" aria-selected="false">Weekly Winners</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="jackpot-summary-tab" data-toggle="tab" data-target="#jackpot-summary" type="button" role="tab" aria-controls="home" aria-selected="false">Jackpot Summary</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="leaguecup-summary-tab" data-toggle="tab" data-target="#leaguecup-summary" type="button" role="tab" aria-controls="home" aria-selected="false">League/Cup Summary</button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        {% include "finance/_fivers-meeting.njk" %}
+        {% include "finance/_fivers-manager.njk" %}
+        {% include "finance/_weekly-winners.njk" %}
+        {% include "finance/_jackpot-summary.njk" %}
+        {% include "finance/_leaguecup-summary.njk" %}
+
+    </div>
 
 {% endblock %}

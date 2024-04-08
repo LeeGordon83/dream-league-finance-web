@@ -11,7 +11,7 @@
       <th style="border-right: 1px solid black; background-color: black;"></th>
       {% for month in credit.months %}
         <th style="text-align:center">
-          {{ month }}
+          {{ month.monthName }}
         </th>
       {% endfor %}
       <th style="text-align:center">End of Season</th>
@@ -32,6 +32,8 @@
         <td style="text-align:center">{{ month.owedSubtotal }}</td>
       {% endfor %}
       <td style="text-align:center">{{ credit.owed.totalOwed }}</td>
-      <tr></table>
+    <tr>
+
+  </table>
 
     {% endblock %}
