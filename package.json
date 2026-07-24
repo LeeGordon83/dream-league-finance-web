@@ -4,6 +4,8 @@
   "description": "backend services for dream league finance",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
     "test": "npm run test"
   },
   "repository": {
@@ -17,7 +19,6 @@
   },
   "homepage": "https://github.com/LeeGordon83/dreamleaguefinance-api#readme",
   "devDependencies": {
-    "blipp": "^4.0.2",
     "nodemon": "^3.0.1",
     "standard": "^17.1.0"
   },
@@ -27,13 +28,13 @@
     "@hapi/inert": "^7.1.0",
     "@hapi/vision": "^7.0.2",
     "bcrypt": "^5.1.0",
+    "blipp": "^4.0.2",
     "hapi-auth-jwt2": "^10.4.0",
     "hapi-pino": "^12.1.0",
     "joi": "^17.9.2",
+    "jsonwebtoken": "^9.0.2",
     "moment": "^2.29.4",
-    "pg": "^8.11.1",
-    "pg-hstore": "^2.3.4",
-    "sequelize": "^6.32.1",
-    "sequelize-cli": "^6.6.1"
+    "mongoose": "^8.0.0",
+    "nodemailer": "^6.9.7"
   }
 }

@@ -1,5 +1,4 @@
 const joi = require('joi')
-const databaseConfig = require('./database')
 const envs = ['development', 'test', 'production']
 
 // Define config schema
@@ -56,8 +55,7 @@ if (result.error) {
 }
 
 const value = {
-  ...result.value,
-  database: databaseConfig
+  ...result.value
 }
 value.isDev = value.env === 'development'
 
