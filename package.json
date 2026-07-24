@@ -4,9 +4,9 @@
   "description": "Dream League Finance web front end",
   "main": "app/index.js",
   "scripts": {
-    "start": "",
+    "start": "node app/index.js",
     "test": "jest --runInBand --forceExit",
-    "start:dev": "nodemon index.js"
+    "start:dev": "nodemon app/index.js"
   },
   "repository": {
     "type": "git",

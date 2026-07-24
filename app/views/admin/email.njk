@@ -5,5 +5,31 @@
 <h2>Email Hub</h2>
 <br />
 
+{% if success %}
+  <div class="alert alert-success">
+    <strong>Success!</strong> {{ message }}
+  </div>
+{% endif %}
+
+{% if error %}
+  <div class="alert alert-danger">
+    <strong>Error!</strong> {{ error }}
+  </div>
+{% endif %}
+
+<div class="card">
+  <div class="card-header">
+    <h5>Send Test Email</h5>
+  </div>
+  <div class="card-body">
+    <form method="POST" action="/admin/email/test">
+      <div class="form-group">
+        <label for="toEmail">Email Address:</label>
+        <input type="email" class="form-control" id="toEmail" name="toEmail" required placeholder="test@example.com">
+      </div>
+      <button type="submit" class="btn btn-primary">Send Test Email</button>
+    </form>
+  </div>
+</div>
 
 {% endblock %}

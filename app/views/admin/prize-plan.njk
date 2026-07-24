@@ -1,0 +1,119 @@
+{% extends '_layout.njk' %}
+
+{% block content %}
+
+<h2>Prize Plan Calculator</h2>
+<br />
+
+<p>Uses your previous 10-manager distribution as weighting, then scales for your current season prize pot.</p>
+
+{% if message %}
+  <div class="alert alert-success">{{ message }}</div>
+{% endif %}
+
+{% if error %}
+  <div class="alert alert-danger">{{ error.message }}</div>
+{% endif %}
+
+<form method="POST" action="/admin/prize-plan">
+  <input type="hidden" name="crumb" value="{{ crumb }}" />
+  <div class="form-row align-items-end">
+    <div class="form-group col-lg-2 col-md-4">
+      <label for="managers">Managers</label>
+      <input type="number" class="form-control" id="managers" name="managers" min="1" required value="{{ values.managers }}">
+    </div>
+    <div class="form-group col-lg-2 col-md-4">
+      <label for="weeks">Weeks</label>
+      <input type="number" class="form-control" id="weeks" name="weeks" min="1" required value="{{ values.weeks }}">
+    </div>
+    <div class="form-group col-lg-2 col-md-4">
+      <label for="weeklyFee">Weekly Fee</label>
+      <input type="number" step="0.01" class="form-control" id="weeklyFee" name="weeklyFee" min="0" required value="{{ values.weeklyFee }}">
+    </div>
+    <div class="form-group col-lg-2 col-md-4">
+      <label for="leagueEntryFee">League Entry Fee</label>
+      <input type="number" step="0.01" class="form-control" id="leagueEntryFee" name="leagueEntryFee" min="0" required value="{{ values.leagueEntryFee }}">
+    </div>
+    <div class="form-group col-lg-2 col-md-4">
+      <label for="cupEntryFee">Cup Entry Fee</label>
+      <input type="number" step="0.01" class="form-control" id="cupEntryFee" name="cupEntryFee" min="0" required value="{{ values.cupEntryFee }}">
+    </div>
+    <div class="form-group col-lg-2 col-md-4">
+      <label for="leagueCupEntryFee">League Cup Entry Fee</label>
+      <input type="number" step="0.01" class="form-control" id="leagueCupEntryFee" name="leagueCupEntryFee" min="0" required value="{{ values.leagueCupEntryFee }}">
+    </div>
+  </div>
+
+  <button type="submit" class="btn btn-primary">Calculate Prize Plan</button>
+</form>
+
+{% if result %}
+  <hr />
+
+  <h4>Prize Pot Summary</h4>
+  <table class="table table-sm table-striped">
+    <tbody>
+      <tr><th>Weekly Income</th><td>£{{ result.totals.weeklyIncome.toFixed(2) }}</td></tr>
+      <tr><th>League Entry Income</th><td>£{{ result.totals.leagueEntryIncome.toFixed(2) }}</td></tr>
+      <tr><th>Cup Income</th><td>£{{ result.totals.cupIncome.toFixed(2) }}</td></tr>
+      <tr><th>League Cup Income</th><td>£{{ result.totals.leagueCupIncome.toFixed(2) }}</td></tr>
+      <tr><th>Total Prize Pot</th><td><strong>£{{ result.totals.prizePot.toFixed(2) }}</strong></td></tr>
+      <tr><th>Income Per Manager</th><td><strong>£{{ result.totals.incomePerManager.toFixed(2) }}</strong></td></tr>
+      <tr><th>Five Fivers (fixed)</th><td>£{{ result.totals.fiversTotal.toFixed(2) }}</td></tr>
+      <tr><th>Jackpot Allocation (£2/week)</th><td>£{{ result.totals.jackpotAllocation.toFixed(2) }}</td></tr>
+      <tr><th>Weekly Prizes (£6/week)</th><td>£{{ result.totals.weeklyPrizesTotal.toFixed(2) }}</td></tr>
+      <tr><th>Competitions Pool</th><td><strong>£{{ result.totals.competitionsPool.toFixed(2) }}</strong></td></tr>
+      <tr><th>League Positions Pool</th><td>£{{ result.totals.leaguePool.toFixed(2) }}</td></tr>
+      <tr><th>Cup Competitions Pool</th><td>£{{ result.totals.cupPool.toFixed(2) }}</td></tr>
+    </tbody>
+  </table>
+
+  <h4>League Positions (Jackpot Won)</h4>
+  <table class="table table-sm table-bordered">
+    <thead>
+      <tr>
+        <th>Position</th>
+        <th>Prize</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in result.jackpotScenarios.jackpotWon.leaguePrizes %}
+        <tr>
+          <td>{{ item.position }}{% if item.position == 1 %}st{% elif item.position == 2 %}nd{% elif item.position == 3 %}rd{% else %}th{% endif %}</td>
+          <td>£{{ item.amount.toFixed(2) }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h4>League Positions (Jackpot Not Won)</h4>
+  <p>Jackpot shared equally across all positions: £{{ result.jackpotScenarios.jackpotNotWon.jackpotSharePerPosition.toFixed(2) }} each.</p>
+  <table class="table table-sm table-bordered">
+    <thead>
+      <tr>
+        <th>Position</th>
+        <th>Prize</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in result.jackpotScenarios.jackpotNotWon.leaguePrizes %}
+        <tr>
+          <td>{{ item.position }}{% if item.position == 1 %}st{% elif item.position == 2 %}nd{% elif item.position == 3 %}rd{% else %}th{% endif %}</td>
+          <td>£{{ item.amount.toFixed(2) }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h4>Cup Competitions</h4>
+  <table class="table table-sm table-bordered">
+    <tbody>
+      <tr><th>Cup Win</th><td>£{{ result.competitions.cupPrizes.cupWin.toFixed(2) }}</td></tr>
+      <tr><th>League Cup Win</th><td>£{{ result.competitions.cupPrizes.leagueCupWin.toFixed(2) }}</td></tr>
+      <tr><th>League Cup Runner Up</th><td>£{{ result.competitions.cupPrizes.leagueCupRunnerUp.toFixed(2) }}</td></tr>
+      <tr><th>Cup Runner Up</th><td>£{{ result.competitions.cupPrizes.cupRunnerUp.toFixed(2) }}</td></tr>
+    </tbody>
+  </table>
+{% endif %}
+
+{% endblock %}

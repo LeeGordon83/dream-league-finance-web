@@ -1,0 +1,32 @@
+{% extends '_layout.njk' %}
+
+{% block content %}
+
+  <h2>Edit Manager</h2>
+  <br/>
+  <form method="POST" action="/admin/edit-manager">
+    <input type="hidden" name="crumb" value="{{crumb}}"/>
+    <input type="hidden" name="managerId" value="{{ managerId }}"/>
+
+    <div class="form-group">
+      <label for="managerName">Manager Name</label>
+      <input type="text" class="form-control" id="managerName" name="managerName" value="{{ managerName }}" required>
+    </div>
+    <div class="form-group">
+      <label for="primaryEmail">Primary Email</label>
+      <input type="email" class="form-control" id="primaryEmail" name="primaryEmail" value="{{ primaryEmail }}" required>
+    </div>
+    <div class="form-group">
+      <label for="secondaryEmail">Secondary Email</label>
+      <input type="email" class="form-control" id="secondaryEmail" name="secondaryEmail" value="{{ secondaryEmail }}">
+    </div>
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+    <a class="btn btn-link" href="/admin/managers">Cancel</a>
+  </form>
+
+  {% if message %}
+    <br/>
+    <p>{{ message }}</p>
+  {% endif %}
+
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends '_layout.njk' %}
+
+{% block content %}
+
+  <h2>Create Prize</h2>
+  <br/>
+
+  <form method="POST" action="/admin/prizes/create">
+    <input type="hidden" name="crumb" value="{{crumb}}"/>
+
+    <div class="form-group">
+      <label for="type">Prize Type</label>
+      <input type="text" class="form-control" id="type" name="type" value="{{ type }}" required>
+    </div>
+
+    <div class="form-group">
+      <label for="amount">Prize Amount</label>
+      <input type="number" class="form-control" id="amount" name="amount" min="0" step="any" value="{{ amount }}" required>
+    </div>
+
+    <div class="form-group form-check">
+      <input type="checkbox" class="form-check-input" id="league" name="league" {% if league %}checked{% endif %}>
+      <label class="form-check-label" for="league">League Prize</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create Prize</button>
+    <a class="btn btn-link" href="/admin/prizes">Cancel</a>
+  </form>
+
+  {% if message %}
+    <br/>
+    <p>{{ message }}</p>
+  {% endif %}
+
+{% endblock %}

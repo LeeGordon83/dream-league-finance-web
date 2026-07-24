@@ -16,6 +16,8 @@ const routes = [].concat(
   require('../routes/transaction/jackpot'),
   require('../routes/transaction/league-cup'),
   require('../routes/finance/all-transactions'),
+  require('../routes/finance/edit-transaction'),
+  require('../routes/finance/delete-transaction'),
   require('../routes/finance/paid-in'),
   require('../routes/finance/credit'),
   require('../routes/finance/balance-sheet'),
@@ -26,7 +28,11 @@ const routes = [].concat(
   require('../routes/admin/fees'),
   require('../routes/admin/managers'),
   require('../routes/admin/add-manager'),
+  require('../routes/admin/edit-manager'),
+  require('../routes/admin/delete-manager'),
   require('../routes/admin/prizes'),
+  require('../routes/admin/create-prize'),
+  require('../routes/admin/prize-plan'),
   require('../routes/admin/season')
   // require('../routes/admin/add-history'),
   // require('../routes/admin/weekly-update')

@@ -4,6 +4,15 @@ services:
     build: .
     image: dream-league-finance-web
     container_name: dream-league-finance-web
+    ports:
+      - '3000:3000'
     environment: 
       JWT_SECRET: secret
       API_HOST: http://dream-league-finance-api:3001
+    networks:
+      - dream-league-finance-network
+
+networks:
+  dream-league-finance-network:
+    external: true
+    name: dream-league-finance-network

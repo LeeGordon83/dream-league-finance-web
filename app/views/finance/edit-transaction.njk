@@ -1,0 +1,54 @@
+{% extends '_layout.njk' %}
+
+{% block content %}
+
+  <h2>Edit Transaction</h2>
+  <br/>
+  <form method="POST" action="/finance/edit-transaction">
+    <input type="hidden" name="crumb" value="{{crumb}}"/>
+    <input type="hidden" name="transactionId" value="{{ transactionId }}"/>
+
+    <div class="form-group">
+      <label for="managerName">Manager</label>
+      <input type="text" class="form-control" id="managerName" name="managerName" value="{{ managerName }}" readonly>
+    </div>
+
+    <div class="form-group">
+      <label for="value">Value</label>
+      <input type="number" class="form-control" id="value" name="value" step="any" value="{{ value }}" required>
+    </div>
+
+    <div class="form-group">
+      <label for="transactionType">Transaction Type</label>
+      <select class="form-control" id="transactionType" name="transactionType" required>
+        {% for type in transactionTypes %}
+          <option value="{{ type }}" {% if type == transactionType %}selected{% endif %}>{{ type }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="date">Transaction Date</label>
+      <input type="date" class="form-control" id="date" name="date" value="{{ date }}" required>
+    </div>
+
+    <div class="form-group">
+      <label for="weekId">Week Number</label>
+      <input type="number" class="form-control" id="weekId" name="weekId" value="{{ weekId }}" required>
+    </div>
+
+    <div class="form-group">
+      <label for="notes">Notes</label>
+      <textarea name="notes" id="notes" class="form-control" rows="4">{{ notes }}</textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+    <a class="btn btn-link" href="/finance/all-transactions">Cancel</a>
+  </form>
+
+  {% if message %}
+    <br/>
+    <p>{{ message }}</p>
+  {% endif %}
+
+{% endblock %}

@@ -24,9 +24,9 @@ module.exports = [{
       }
     },
     handler: async (request, h) => {
-      await api.post('/transaction/adhoc', request.payload, request.state.dl_token)
+      await api.post('/admin/managers/create', request.payload, request.state.dl_token)
 
-      return h.view('transaction/select-transaction')
+      return h.redirect('/admin/managers')
     }
   }
 }]

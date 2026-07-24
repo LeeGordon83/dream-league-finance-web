@@ -3,17 +3,219 @@
 {% block content %}
   <h2>Register</h2>
   <p>Only current dream league members can register</p>
-  <form method="POST" action="/register">
+  
+  {% if message %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  {% endif %}
+
+  <form method="POST" action="/register" id="registerForm" novalidate>
     <input type="hidden" name="crumb" value="{{crumb}}"/>
+    
     <div class="form-group">
-      <label for="email">Email address</label>
-      <input type="email" class="form-control" id="email" name="email" autocomplete="username">
+      <label for="email" class="form-label">Email address</label>
+      <input 
+        type="email" 
+        class="form-control" 
+        id="email" 
+        name="email" 
+        autocomplete="username"
+        value="{{ email or '' }}"
+        required>
+      <div class="invalid-feedback">
+        Please provide a valid email address.
+      </div>
     </div>
+
     <div class="form-group">
-      <label for="password">Password</label>
-      <input type="password" class="form-control" id="password" name="password" autocomplete="current-password">
+      <label for="password" class="form-label">Password</label>
+      <input 
+        type="password" 
+        class="form-control" 
+        id="password" 
+        name="password" 
+        autocomplete="new-password"
+        required>
+      <div class="invalid-feedback" id="passwordError">
+        Password does not meet requirements.
+      </div>
     </div>
-    <button type="submit" class="btn btn-primary">Submit</button>
+
+    <!-- Password Requirements Checklist -->
+    <div style="margin-top: 15px; padding: 12px; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 0.25rem; width: fit-content;" id="passwordRequirements">
+      <small style="color: #6c757d; display: block; margin-bottom: 8px;"><strong>Password must contain:</strong></small>
+      
+      <div class="requirement" data-requirement="length" style="display: flex; align-items: center; padding: 4px 0; font-size: 0.9rem; color: #6c757d; transition: color 0.2s;">
+        <span class="requirement-icon" style="min-width: 20px; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px;">
+          <i class="bi bi-circle"></i>
+        </span>
+        <span class="requirement-text">
+          At least <strong>{{ passwordRequirements.minLength }} characters</strong>
+        </span>
+      </div>
+
+      <div class="requirement" data-requirement="uppercase" style="display: flex; align-items: center; padding: 4px 0; font-size: 0.9rem; color: #6c757d; transition: color 0.2s;">
+        <span class="requirement-icon" style="min-width: 20px; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px;">
+          <i class="bi bi-circle"></i>
+        </span>
+        <span class="requirement-text">
+          At least one <strong>uppercase letter</strong> (A-Z)
+        </span>
+      </div>
+
+      <div class="requirement" data-requirement="number" style="display: flex; align-items: center; padding: 4px 0; font-size: 0.9rem; color: #6c757d; transition: color 0.2s;">
+        <span class="requirement-icon" style="min-width: 20px; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px;">
+          <i class="bi bi-circle"></i>
+        </span>
+        <span class="requirement-text">
+          At least one <strong>number</strong> (0-9)
+        </span>
+      </div>
+
+      <div class="requirement" data-requirement="special" style="display: flex; align-items: center; padding: 4px 0; font-size: 0.9rem; color: #6c757d; transition: color 0.2s;">
+        <span class="requirement-icon" style="min-width: 20px; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px;">
+          <i class="bi bi-circle"></i>
+        </span>
+        <span class="requirement-text">
+          At least one <strong>special character</strong> (!@#$%^&*)
+        </span>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="display: block; margin-top: 15px;">Submit</button>
   </form>
-  <p>{{ message }}</p>
+
+  <style>
+    .requirement {
+      display: flex;
+      align-items: center;
+      padding: 4px 0;
+      font-size: 0.9rem;
+      color: #6c757d;
+      transition: color 0.2s;
+    }
+
+    .requirement.met {
+      color: #198754;
+    }
+
+    .requirement.unmet {
+      color: #dc3545;
+    }
+
+    .requirement-icon {
+      min-width: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .requirement-icon i {
+      font-size: 1rem;
+    }
+
+    .requirement.met .requirement-icon::before {
+      content: '✓';
+      font-weight: bold;
+      color: #198754;
+    }
+
+    .requirement.met .requirement-icon i {
+      display: none;
+    }
+
+    .requirement.unmet .requirement-icon::before {
+      content: '✕';
+      font-weight: bold;
+      color: #dc3545;
+    }
+
+    .requirement.unmet .requirement-icon i {
+      display: none;
+    }
+
+    .form-control.is-invalid {
+      border-color: #dc3545;
+    }
+
+    .form-control.is-valid {
+      border-color: #198754;
+    }
+  </style>
+
+  <script>
+    const passwordInput = document.getElementById('password');
+    const requirements = {
+      length: {{ passwordRequirements.minLength }},
+      uppercase: true,
+      number: true,
+      special: true
+    };
+
+    function checkPassword(password) {
+      const checks = {
+        length: password.length >= requirements.length,
+        uppercase: /[A-Z]/.test(password),
+        number: /[0-9]/.test(password),
+        special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+      };
+
+      return checks;
+    }
+
+    function updateRequirements(password) {
+      const checks = checkPassword(password);
+      
+      Object.keys(checks).forEach(key => {
+        const element = document.querySelector(`[data-requirement="${key}"]`);
+        if (element) {
+          element.classList.remove('met', 'unmet');
+          element.classList.add(checks[key] ? 'met' : 'unmet');
+        }
+      });
+
+      // Update form control validation state
+      const allMet = Object.values(checks).every(v => v);
+      passwordInput.classList.remove('is-valid', 'is-invalid');
+      if (password.length > 0) {
+        passwordInput.classList.add(allMet ? 'is-valid' : 'is-invalid');
+      }
+
+      return allMet;
+    }
+
+    // Initialize on page load
+    const checks = checkPassword(passwordInput.value);
+    Object.keys(checks).forEach(key => {
+      const element = document.querySelector(`[data-requirement="${key}"]`);
+      if (element && checks[key]) {
+        element.classList.add('met');
+      }
+    });
+
+    // Listen for password input changes
+    passwordInput.addEventListener('input', function() {
+      updateRequirements(this.value);
+    });
+
+    // Handle form submission
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+      const password = passwordInput.value;
+      const checks = checkPassword(password);
+      const allMet = Object.values(checks).every(v => v);
+
+      if (!allMet) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.classList.add('was-validated');
+        const unmetRequirements = Object.keys(checks)
+          .filter(key => !checks[key])
+          .join(', ');
+        document.getElementById('passwordError').textContent = 
+          `Password must contain: ${unmetRequirements}`;
+      }
+    });
+  </script>
 {% endblock %}
