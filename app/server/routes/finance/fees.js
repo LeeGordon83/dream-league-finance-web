@@ -1,13 +1,9 @@
 const financeService = require('../../services/finance')
-const { requireAdmin } = require('../../auth')
 
 module.exports = [{
   method: 'GET',
-  path: '/admin/fees',
-  config: {
-    auth: 'jwt',
-    pre: [requireAdmin]
-  },
+  path: '/finance/fees',
+  config: {},
   handler: async (_request, h) => {
     const fees = await financeService.getAdminFees()
     return h.response(fees).code(200)

@@ -1,6 +1,7 @@
 const Manager = require('../models/manager')
 const joi = require('joi')
 const mongoose = require('mongoose')
+const { requireAdmin } = require('../auth')
 
 const managerName = (manager) => manager.managerName || manager.ManagerName || ''
 
@@ -45,12 +46,15 @@ const managerQueryById = (id) => {
 
 const normalizeEmails = (primaryEmail, secondaryEmail) => {
   const emails = []
-  if (primaryEmail) {
-    emails.push({ address: String(primaryEmail).trim() })
+  const normalizedPrimary = String(primaryEmail || '').trim().toLowerCase()
+  const normalizedSecondary = String(secondaryEmail || '').trim().toLowerCase()
+
+  if (normalizedPrimary) {
+    emails.push({ address: normalizedPrimary })
   }
 
-  if (secondaryEmail) {
-    emails.push({ address: String(secondaryEmail).trim() })
+  if (normalizedSecondary) {
+    emails.push({ address: normalizedSecondary })
   }
 
   return emails
@@ -59,7 +63,10 @@ const normalizeEmails = (primaryEmail, secondaryEmail) => {
 module.exports = [{
   method: 'GET',
   path: '/admin/managers',
-  config: {},
+  config: {
+    auth: 'jwt',
+    pre: [requireAdmin]
+  },
   handler: async (_request, h) => {
     try {
       const managers = await Manager.find({}).lean()
@@ -74,6 +81,8 @@ module.exports = [{
   method: 'GET',
   path: '/admin/managers/{managerId}',
   config: {
+    auth: 'jwt',
+    pre: [requireAdmin],
     validate: {
       params: joi.object({
         managerId: joi.string().required()
@@ -94,11 +103,13 @@ module.exports = [{
   method: 'POST',
   path: '/admin/managers/create',
   config: {
+    auth: 'jwt',
+    pre: [requireAdmin],
     validate: {
       payload: joi.object({
         managerName: joi.string().trim().required(),
-        primaryEmail: joi.string().email().required(),
-        secondaryEmail: joi.string().email().allow('', null)
+        primaryEmail: joi.string().trim().email().allow('', null).optional(),
+        secondaryEmail: joi.string().trim().email().allow('', null).optional()
       })
     }
   },
@@ -107,13 +118,21 @@ module.exports = [{
     const managerId = String(Date.now())
     const emails = normalizeEmails(primaryEmail, secondaryEmail)
 
-    const manager = await Manager.create({
+    const managerData = {
       managerId,
       managerName: name,
-      active: true,
-      emails,
-      email: String(primaryEmail).trim().toLowerCase()
-    })
+      active: true
+    }
+
+    if (emails.length > 0) {
+      managerData.emails = emails
+    }
+
+    if (emails[0] && emails[0].address) {
+      managerData.email = emails[0].address
+    }
+
+    const manager = await Manager.create(managerData)
 
     return h.response(managerToView(manager)).code(201)
   }
@@ -121,28 +140,51 @@ module.exports = [{
   method: 'POST',
   path: '/admin/managers/update',
   config: {
+    auth: 'jwt',
+    pre: [requireAdmin],
     validate: {
       payload: joi.object({
         managerId: joi.string().required(),
         managerName: joi.string().trim().required(),
-        primaryEmail: joi.string().email().required(),
-        secondaryEmail: joi.string().email().allow('', null)
+        primaryEmail: joi.string().trim().email().allow('', null).optional(),
+        secondaryEmail: joi.string().trim().email().allow('', null).optional(),
+        isAdmin: joi.boolean().optional()
       })
     }
   },
   handler: async (request, h) => {
-    const { managerId, managerName: name, primaryEmail, secondaryEmail } = request.payload
+    const { managerId, managerName: name, primaryEmail, secondaryEmail, isAdmin } = request.payload
     const emails = normalizeEmails(primaryEmail, secondaryEmail)
+    
+    const updateData = {
+      $set: {
+        managerName: name
+      },
+      $unset: {
+        Email: '',
+        Emails: ''
+      }
+    }
+
+    if (emails.length > 0) {
+      updateData.$set.emails = emails
+    } else {
+      updateData.$unset.emails = ''
+    }
+
+    if (emails[0] && emails[0].address) {
+      updateData.$set.email = emails[0].address
+    } else {
+      updateData.$unset.email = ''
+    }
+    
+    if (isAdmin !== undefined) {
+      updateData.$set.isAdmin = Boolean(isAdmin)
+    }
 
     const updated = await Manager.findOneAndUpdate(
       managerQueryById(managerId),
-      {
-        $set: {
-          managerName: name,
-          emails,
-          email: String(primaryEmail).trim().toLowerCase()
-        }
-      },
+      updateData,
       { new: true }
     ).lean()
 
@@ -156,6 +198,8 @@ module.exports = [{
   method: 'POST',
   path: '/admin/managers/delete',
   config: {
+    auth: 'jwt',
+    pre: [requireAdmin],
     validate: {
       payload: joi.object({
         managerId: joi.string().required()
@@ -171,5 +215,37 @@ module.exports = [{
     }
 
     return h.response({ success: true }).code(200)
+  }
+}, {
+  method: 'POST',
+  path: '/admin/managers/set-admin',
+  config: {
+    auth: 'jwt',
+    pre: [requireAdmin],
+    validate: {
+      payload: joi.object({
+        managerId: joi.string().required(),
+        isAdmin: joi.boolean().required()
+      })
+    }
+  },
+  handler: async (request, h) => {
+    const { managerId, isAdmin } = request.payload
+    
+    const updated = await Manager.findOneAndUpdate(
+      managerQueryById(managerId),
+      {
+        $set: {
+          isAdmin: Boolean(isAdmin)
+        }
+      },
+      { new: true }
+    ).lean()
+
+    if (!updated) {
+      return h.response({ error: 'Manager not found' }).code(404)
+    }
+
+    return h.response(managerToView(updated)).code(200)
   }
 }]

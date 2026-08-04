@@ -12,13 +12,11 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRY_IN_MINUTES=${JWT_EXPIRY_IN_MINUTES}
       - WEB_URL=${WEB_URL}
+      - WINNERS_API_URL=${WINNERS_API_URL}
       - ALLOW_NON_MEMBER_REGISTRATION=${ALLOW_NON_MEMBER_REGISTRATION}
-      - SMTP_HOST=${SMTP_HOST}
-      - SMTP_PORT=${SMTP_PORT}
-      - SMTP_SECURE=${SMTP_SECURE}
-      - SMTP_TLS=${SMTP_TLS}
-      - SMTP_USER=${SMTP_USER}
-      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ADMIN_NAME=${ADMIN_NAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
     depends_on:
       - dream-league-finance-mongo
     networks:

@@ -205,6 +205,51 @@ const isLeaguePrize = (prize) => Boolean(prize.leaguePrize ?? prize.LeaguePrize)
 
 const isCupPrize = (prize) => Boolean(prize.cupPrize ?? prize.CupPrize)
 
+const parseLeaguePosition = (type) => {
+  const match = String(type || '').trim().match(/^(\d+)(st|nd|rd|th)$/i)
+  if (!match) {
+    return null
+  }
+
+  const value = Number(match[1])
+  return Number.isInteger(value) ? value : null
+}
+
+const otherPrizePriority = {
+  'Cup Win': 1,
+  'Cup Runner Up': 2,
+  'League Cup Win': 3,
+  'League Cup Runner Up': 4
+}
+
+const comparePrizeOrder = (a, b) => {
+  if (a.league && b.league) {
+    const ap = parseLeaguePosition(a.type)
+    const bp = parseLeaguePosition(b.type)
+
+    if (ap !== null && bp !== null) {
+      return ap - bp
+    }
+
+    if (ap !== null) return -1
+    if (bp !== null) return 1
+    return a.type.localeCompare(b.type)
+  }
+
+  if (!a.league && !b.league) {
+    const ap = otherPrizePriority[a.type] || 999
+    const bp = otherPrizePriority[b.type] || 999
+
+    if (ap !== bp) {
+      return ap - bp
+    }
+
+    return a.type.localeCompare(b.type)
+  }
+
+  return a.league ? -1 : 1
+}
+
 const getFeeAmount = (fees, feeType) => {
   const fee = fees.find(item => toFeeType(item) === feeType)
   return fee ? toFeeAmount(fee) : 0
@@ -775,7 +820,7 @@ const getAdminPrizes = async () => {
       league: isLeaguePrize(prize)
     }))
     .filter(prize => prize.type)
-    .sort((a, b) => a.type.localeCompare(b.type))
+    .sort(comparePrizeOrder)
 }
 
 const getAdminSeason = async () => {
@@ -788,7 +833,8 @@ const getAdminSeason = async () => {
     .map(week => ({
       weekNo: week.weekNo || week.WeekNo || 0,
       start: week.weekStartDate || week.WeekStartDate || null,
-      end: week.weekEndDate || week.WeekEndDate || null
+      end: week.weekEndDate || week.WeekEndDate || null,
+      complete: Boolean(week.weekCompleted ?? week.WeekCompleted)
     }))
     .filter(week => week.weekNo)
     .sort((a, b) => a.weekNo - b.weekNo)
@@ -797,6 +843,295 @@ const getAdminSeason = async () => {
     start: sortedWeeks.length ? sortedWeeks[0].start : null,
     weeks: sortedWeeks,
     managers: managers.filter(managerIsActive).length
+  }
+}
+
+const isWeekComplete = (week) => {
+  if (!week) {
+    return false
+  }
+
+  if (week.complete) {
+    return true
+  }
+
+  const end = toDate(week.end)
+  if (!end) {
+    return false
+  }
+
+  const now = new Date()
+  const nowUtcDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
+  return end <= nowUtcDay
+}
+
+const hasWeekStarted = (week) => {
+  if (!week) {
+    return false
+  }
+
+  const start = toDate(week.start)
+  if (!start) {
+    return false
+  }
+
+  const now = new Date()
+  const nowUtcDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
+  return start <= nowUtcDay
+}
+
+const toUtcDate = (value) => {
+  if (!value) {
+    return null
+  }
+
+  const input = String(value)
+  const match = input.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (match) {
+    const year = Number(match[1])
+    const month = Number(match[2]) - 1
+    const day = Number(match[3])
+    return new Date(Date.UTC(year, month, day))
+  }
+
+  const parsed = toDate(value)
+  if (!parsed) {
+    return null
+  }
+
+  return new Date(Date.UTC(parsed.getUTCFullYear(), parsed.getUTCMonth(), parsed.getUTCDate()))
+}
+
+const createAdminSeason = async ({ startDate, weekNum }) => {
+  const existingWeeks = await readWeeks()
+  const existingCount = existingWeeks.filter(week => Number(week.weekNo || week.WeekNo || 0) > 0).length
+  if (existingCount > 0) {
+    const error = new Error('Season already exists')
+    error.code = 'SEASON_EXISTS'
+    throw error
+  }
+
+  const parsedStart = toUtcDate(startDate)
+  const totalWeeks = Number(weekNum)
+
+  if (!parsedStart || !Number.isInteger(totalWeeks) || totalWeeks < 1) {
+    const error = new Error('Invalid season inputs')
+    error.code = 'INVALID_SEASON_INPUT'
+    throw error
+  }
+
+  const weeks = []
+  for (let i = 0; i < totalWeeks; i++) {
+    const weekStartDate = new Date(parsedStart)
+    weekStartDate.setUTCDate(parsedStart.getUTCDate() + (i * 7))
+
+    const weekEndDate = new Date(weekStartDate)
+    weekEndDate.setUTCDate(weekStartDate.getUTCDate() + 6)
+
+    const weekNo = i + 1
+
+    weeks.push({
+      weekNo,
+      WeekNo: weekNo,
+      weekStartDate,
+      WeekStartDate: weekStartDate,
+      weekEndDate,
+      WeekEndDate: weekEndDate
+    })
+  }
+
+  await Week.insertMany(weeks)
+  return getAdminSeason()
+}
+
+const getLeagueSnapshot = async () => {
+  const [balance, credit, season, managers, transactions] = await Promise.all([
+    getBalance(),
+    getCredit(),
+    getAdminSeason(),
+    readManagers(),
+    readTransactions()
+  ])
+
+  const activeManagers = managers.filter(managerIsActive)
+  const managerById = activeManagers
+    .map(manager => ({
+      id: normalizeId(manager.managerId || manager.ManagerId || manager._id),
+      managerName: managerName(manager)
+    }))
+    .reduce((map, manager) => {
+      map[manager.id] = manager
+      return map
+    }, {})
+
+  const currentWeek = season.weeks
+    .filter(week => isWeekComplete(week) || hasWeekStarted(week))
+    .reduce((max, week) => Math.max(max, Number(week.weekNo || 0)), 0)
+  const totalWeeks = season.weeks.length
+  const weeksRemaining = Math.max(0, totalWeeks - currentWeek)
+  const jackpotAccruedWeeks = season.weeks.filter(week => isWeekComplete(week) || hasWeekStarted(week)).length
+
+  const totalPaidIn = roundCurrency(balance.currentTotalIn)
+  const totalPaidOut = roundCurrency(balance.currentTotalOut)
+  const currentBalance = roundCurrency(totalPaidIn - totalPaidOut)
+  const currentJackpot = roundCurrency(Math.max(
+    0,
+    (jackpotAccruedWeeks * 2) + Number(balance.jackpotCarryOver || 0) - Number(balance.jackpotOut || 0)
+  ))
+  const expectedBalance = roundCurrency(Number(balance.expectedTotalIn || 0) - Number(balance.expectedTotalOut || 0))
+  const reconciliationGap = roundCurrency(currentBalance - expectedBalance)
+
+  const managersBehind = credit.managerCreditByMonth
+    .filter(item => Number(item.totalCredit || 0) < 0)
+    .map(item => ({
+      managerId: item.manager.id,
+      managerName: item.manager.name,
+      owed: roundCurrency(Math.abs(Number(item.totalCredit || 0)))
+    }))
+    .sort((a, b) => b.owed - a.owed)
+
+  const outstandingExpectedContributions = roundCurrency(managersBehind.reduce((sum, item) => sum + item.owed, 0))
+
+  const recentTransactions = transactions
+    .map(transaction => {
+      const date = transaction.transactionDate || transaction.TransactionDate || null
+      return {
+        id: normalizeId(transaction.transactionId || transaction.TransactionId || transaction._id),
+        managerName: transactionManagerName(transaction, managerById),
+        type: toTransactionType(transaction),
+        value: toTransactionValue(transaction),
+        date,
+        weekNo: Number(transactionWeekNo(transaction)) || 0
+      }
+    })
+    .sort((a, b) => {
+      const ad = toDate(a.date)
+      const bd = toDate(b.date)
+      if (!ad && !bd) return 0
+      if (!ad) return 1
+      if (!bd) return -1
+      return bd - ad
+    })
+    .slice(0, 10)
+
+  return {
+    totals: {
+      totalPaidIn,
+      totalPaidOut,
+      currentBalance,
+      currentJackpot
+    },
+    season: {
+      currentWeek,
+      totalWeeks,
+      weeksRemaining,
+      activeManagers: activeManagers.length
+    },
+    health: {
+      outstandingExpectedContributions,
+      managersBehindCount: managersBehind.length,
+      reconciliationGap,
+      hasReconciliationGap: Math.abs(reconciliationGap) > 0.01
+    },
+    recentTransactions,
+    managersBehind: managersBehind.slice(0, 5)
+  }
+}
+
+const getAdminActionQueue = async () => {
+  const [credit, season, transactions, managers] = await Promise.all([
+    getCredit(),
+    getAdminSeason(),
+    readTransactions(),
+    readManagers()
+  ])
+
+  const managerById = managers
+    .map(manager => ({
+      id: normalizeId(manager.managerId || manager.ManagerId || manager._id),
+      managerName: managerName(manager)
+    }))
+    .reduce((map, manager) => {
+      map[manager.id] = manager
+      return map
+    }, {})
+
+  const behindManagers = credit.managerCreditByMonth
+    .filter(item => Number(item.totalCredit || 0) < 0)
+    .map(item => ({
+      managerId: item.manager.id,
+      managerName: item.manager.name,
+      owed: roundCurrency(Math.abs(Number(item.totalCredit || 0)))
+    }))
+    .sort((a, b) => b.owed - a.owed)
+
+  const weeks = season.weeks.map(week => Number(week.weekNo || 0)).filter(Boolean)
+  const weeklyWeekNumbers = new Set(
+    transactions
+      .filter(transaction => toTransactionType(transaction) === 'Weekly')
+      .map(transaction => Number(transactionWeekNo(transaction) || 0))
+      .filter(Boolean)
+  )
+  const missingWeeklyWeeks = weeks.filter(weekNo => !weeklyWeekNumbers.has(weekNo))
+
+  const unassignedTransactions = transactions
+    .filter(transaction => !transactionManagerName(transaction, managerById))
+    .map(transaction => ({
+      transactionId: normalizeId(transaction.transactionId || transaction.TransactionId || transaction._id),
+      type: toTransactionType(transaction),
+      value: toTransactionValue(transaction),
+      date: transaction.transactionDate || transaction.TransactionDate || null,
+      weekNo: Number(transactionWeekNo(transaction)) || 0
+    }))
+
+  const actions = []
+
+  if (behindManagers.length) {
+    actions.push({
+      key: 'manager-arrears',
+      severity: 'high',
+      title: 'Managers behind on contributions',
+      count: behindManagers.length,
+      description: `${behindManagers.length} manager(s) currently below expected contributions.`
+    })
+  }
+
+  if (missingWeeklyWeeks.length) {
+    actions.push({
+      key: 'missing-weekly',
+      severity: 'medium',
+      title: 'Missing weekly prize entries',
+      count: missingWeeklyWeeks.length,
+      description: `${missingWeeklyWeeks.length} week(s) have no weekly payout transaction recorded.`
+    })
+  }
+
+  if (unassignedTransactions.length) {
+    actions.push({
+      key: 'unassigned-transactions',
+      severity: 'medium',
+      title: 'Unassigned transactions found',
+      count: unassignedTransactions.length,
+      description: `${unassignedTransactions.length} transaction(s) are missing a manager link.`
+    })
+  }
+
+  if (!actions.length) {
+    actions.push({
+      key: 'all-clear',
+      severity: 'low',
+      title: 'No immediate admin actions',
+      count: 0,
+      description: 'Everything looks up to date.'
+    })
+  }
+
+  return {
+    generatedAt: new Date().toISOString(),
+    actions,
+    behindManagers: behindManagers.slice(0, 10),
+    missingWeeklyWeeks,
+    unassignedTransactions: unassignedTransactions.slice(0, 10)
   }
 }
 
@@ -812,6 +1147,70 @@ const createAdminPrize = async ({ type, amount, league }) => {
     type: toPrizeType(created),
     amount: toPrizeAmount(created),
     league: isLeaguePrize(created)
+  }
+}
+
+const replaceAdminPrizesFromPlan = async (inputs) => {
+  const plan = calculatePrizePlan(inputs)
+
+  const leaguePrizeDocs = plan.competitions.leaguePrizes.map(prize => ({
+    prizeType: ordinal(prize.position),
+    prizeAmount: Number(prize.amount || 0),
+    leaguePrize: true,
+    cupPrize: false
+  }))
+
+  const cupPrizeDocs = [
+    {
+      prizeType: 'Cup Win',
+      prizeAmount: Number(plan.competitions.cupPrizes.cupWin || 0),
+      leaguePrize: false,
+      cupPrize: true
+    },
+    {
+      prizeType: 'League Cup Win',
+      prizeAmount: Number(plan.competitions.cupPrizes.leagueCupWin || 0),
+      leaguePrize: false,
+      cupPrize: true
+    },
+    {
+      prizeType: 'League Cup Runner Up',
+      prizeAmount: Number(plan.competitions.cupPrizes.leagueCupRunnerUp || 0),
+      leaguePrize: false,
+      cupPrize: true
+    },
+    {
+      prizeType: 'Cup Runner Up',
+      prizeAmount: Number(plan.competitions.cupPrizes.cupRunnerUp || 0),
+      leaguePrize: false,
+      cupPrize: true
+    }
+  ]
+
+  const fixedPrizeDocs = [
+    {
+      prizeType: 'Five Fivers',
+      prizeAmount: FIXED_PRIZES.fiveFivers,
+      leaguePrize: false,
+      cupPrize: false
+    },
+    {
+      prizeType: 'Weekly Prize',
+      prizeAmount: FIXED_PRIZES.weeklyPrize,
+      leaguePrize: false,
+      cupPrize: false
+    }
+  ]
+
+  const prizesToInsert = [...leaguePrizeDocs, ...cupPrizeDocs, ...fixedPrizeDocs]
+
+  await Prize.deleteMany({})
+  await Prize.insertMany(prizesToInsert)
+
+  return {
+    success: true,
+    count: prizesToInsert.length,
+    plan
   }
 }
 
@@ -866,6 +1265,271 @@ const createAdhocTransaction = async ({ amountPaid, managerSelect, notes }) => {
     success: true,
     transactionId: normalizeId(created.transactionId || created.TransactionId || created._id)
   }
+}
+
+const findManagerById = async (managerIdRaw) => {
+  const managerId = normalizeId(managerIdRaw)
+  const managerQuery = {
+    $or: [
+      { managerId },
+      { ManagerId: managerId }
+    ]
+  }
+
+  if (mongoose.Types.ObjectId.isValid(managerId)) {
+    managerQuery.$or.push({ _id: managerId })
+  }
+
+  const manager = await Manager.findOne(managerQuery).lean()
+  return { managerId, manager }
+}
+
+const toManagerIds = (managerSelect) => {
+  if (Array.isArray(managerSelect)) {
+    return managerSelect.map(normalizeId).filter(Boolean)
+  }
+
+  const single = normalizeId(managerSelect)
+  return single ? [single] : []
+}
+
+const createPayoutTransaction = async ({ managerSelect, amountWon, weekId, transactionDate, notes, transactionType }) => {
+  const managerIds = toManagerIds(managerSelect)
+  if (!managerIds.length) {
+    throw new Error('At least one manager must be selected')
+  }
+
+  const value = Number(amountWon)
+  const parsedWeekId = Number(weekId)
+  const dateValue = transactionDate ? new Date(transactionDate) : new Date()
+  const safeDate = Number.isNaN(dateValue.getTime()) ? new Date() : dateValue
+  const safeValue = Number.isNaN(value) ? 0 : value
+  const safeWeekId = Number.isNaN(parsedWeekId) ? 0 : parsedWeekId
+  const safeNotes = String(notes || '')
+
+  const createdAt = Date.now()
+  const transactions = await Promise.all(managerIds.map(async (managerId, index) => {
+    const { manager } = await findManagerById(managerId)
+
+    const transaction = {
+      transactionId: `${createdAt}-${index + 1}`,
+      managerId,
+      transactionType: String(transactionType || ''),
+      transactionDate: safeDate,
+      weekId: safeWeekId,
+      value: safeValue,
+      notes: safeNotes
+    }
+
+    if (manager) {
+      transaction.manager = {
+        managerId,
+        managerName: managerName(manager)
+      }
+    }
+
+    return transaction
+  }))
+
+  const created = await Transaction.insertMany(transactions)
+
+  return {
+    success: true,
+    transactionIds: created.map(item => normalizeId(item.transactionId || item.TransactionId || item._id)),
+    createdCount: created.length
+  }
+}
+
+const splitAmountAcrossWinners = (totalAmount, winnerCount) => {
+  const safeWinnerCount = Math.max(1, Number(winnerCount) || 1)
+  const totalPennies = Math.round(Math.max(0, Number(totalAmount) || 0) * 100)
+  const basePennies = Math.floor(totalPennies / safeWinnerCount)
+  const remainderPennies = totalPennies % safeWinnerCount
+
+  return Array.from({ length: safeWinnerCount }, (_item, index) => {
+    const valuePennies = basePennies + (index < remainderPennies ? 1 : 0)
+    return valuePennies / 100
+  })
+}
+
+const createWeeklyTransaction = async ({ managerSelect, weekId, transactionDate, notes }) => {
+  const managerIds = toManagerIds(managerSelect)
+  if (!managerIds.length) {
+    throw new Error('At least one manager must be selected')
+  }
+
+  const parsedWeekId = Number(weekId)
+  const dateValue = transactionDate ? new Date(transactionDate) : new Date()
+  const safeDate = Number.isNaN(dateValue.getTime()) ? new Date() : dateValue
+  const safeWeekId = Number.isNaN(parsedWeekId) ? 0 : parsedWeekId
+  const safeNotes = String(notes || '')
+  const splitValues = splitAmountAcrossWinners(6, managerIds.length)
+  const createdAt = Date.now()
+
+  const transactions = await Promise.all(managerIds.map(async (managerId, index) => {
+    const { manager } = await findManagerById(managerId)
+
+    const transaction = {
+      transactionId: `${createdAt}-${index + 1}`,
+      managerId,
+      transactionType: 'Weekly',
+      transactionDate: safeDate,
+      weekId: safeWeekId,
+      value: splitValues[index],
+      notes: safeNotes
+    }
+
+    if (manager) {
+      transaction.manager = {
+        managerId,
+        managerName: managerName(manager)
+      }
+    }
+
+    return transaction
+  }))
+
+  const created = await Transaction.insertMany(transactions)
+
+  return {
+    success: true,
+    totalAmount: 6,
+    transactionIds: created.map(item => normalizeId(item.transactionId || item.TransactionId || item._id)),
+    createdCount: created.length
+  }
+}
+
+const createFiverTransaction = async ({ managerSelect, amountWon, weekId, transactionDate, notes }) => {
+  return createPayoutTransaction({
+    managerSelect,
+    amountWon,
+    weekId,
+    transactionDate,
+    notes,
+    transactionType: 'Fiver'
+  })
+}
+
+const getJackpotAmountForWeek = async (weekIdRaw) => {
+  const targetWeekId = Number(weekIdRaw)
+  if (!Number.isInteger(targetWeekId) || targetWeekId < 1) {
+    const error = new Error('Invalid week id')
+    error.code = 'INVALID_WEEK'
+    throw error
+  }
+
+  const [weeks, transactions] = await Promise.all([
+    readWeeks(),
+    readTransactions()
+  ])
+
+  const seasonWeeks = weeks
+    .map(week => ({
+      weekId: Number(week.weekNo || week.WeekNo || 0),
+      start: week.weekStartDate || week.WeekStartDate || null,
+      end: week.weekEndDate || week.WeekEndDate || null,
+      complete: Boolean(week.weekCompleted ?? week.WeekCompleted)
+    }))
+    .filter(week => week.weekId > 0)
+    .sort((a, b) => a.weekId - b.weekId)
+
+  const hasTargetWeek = seasonWeeks.some(week => week.weekId === targetWeekId)
+  if (!hasTargetWeek) {
+    const error = new Error('Week not found')
+    error.code = 'WEEK_NOT_FOUND'
+    throw error
+  }
+
+  const jackpotAccruedWeeks = seasonWeeks
+    .filter(week => week.weekId <= targetWeekId)
+    .filter(week => isWeekComplete(week) || hasWeekStarted(week))
+    .length
+
+  const toWeekId = (transaction) => Number(transactionWeekNo(transaction) || 0)
+
+  const jackpotCarryOver = transactions
+    .filter(transaction => toTransactionType(transaction) === 'Jackpot Carry Over')
+    .filter(transaction => {
+      const transactionWeekId = toWeekId(transaction)
+      return transactionWeekId === 0 || transactionWeekId <= targetWeekId
+    })
+    .reduce((sum, transaction) => sum + toTransactionValue(transaction), 0)
+
+  const jackpotPaidOut = transactions
+    .filter(transaction => toTransactionType(transaction) === 'Jackpot')
+    .filter(transaction => {
+      const transactionWeekId = toWeekId(transaction)
+      return transactionWeekId === 0 || transactionWeekId <= targetWeekId
+    })
+    .reduce((sum, transaction) => sum + toTransactionValue(transaction), 0)
+
+  const jackpotAmount = roundCurrency(Math.max(0, (jackpotAccruedWeeks * 2) + jackpotCarryOver - jackpotPaidOut))
+
+  return {
+    weekId: targetWeekId,
+    amount: jackpotAmount
+  }
+}
+
+const createJackpotTransaction = async ({ managerSelect, amountWon, weekId, transactionDate, notes }) => {
+  const managerIds = toManagerIds(managerSelect)
+  if (!managerIds.length) {
+    throw new Error('At least one manager must be selected')
+  }
+
+  const totalAmount = Number(amountWon)
+  const parsedWeekId = Number(weekId)
+  const dateValue = transactionDate ? new Date(transactionDate) : new Date()
+  const safeDate = Number.isNaN(dateValue.getTime()) ? new Date() : dateValue
+  const safeTotalAmount = Number.isNaN(totalAmount) ? 0 : Math.max(0, roundCurrency(totalAmount))
+  const safeWeekId = Number.isNaN(parsedWeekId) ? 0 : parsedWeekId
+  const safeNotes = String(notes || '')
+
+  const splitValues = splitAmountAcrossWinners(safeTotalAmount, managerIds.length)
+  const createdAt = Date.now()
+
+  const transactions = await Promise.all(managerIds.map(async (managerId, index) => {
+    const { manager } = await findManagerById(managerId)
+
+    const transaction = {
+      transactionId: `${createdAt}-${index + 1}`,
+      managerId,
+      transactionType: 'Jackpot',
+      transactionDate: safeDate,
+      weekId: safeWeekId,
+      value: splitValues[index],
+      notes: safeNotes
+    }
+
+    if (manager) {
+      transaction.manager = {
+        managerId,
+        managerName: managerName(manager)
+      }
+    }
+
+    return transaction
+  }))
+
+  const created = await Transaction.insertMany(transactions)
+
+  return {
+    success: true,
+    totalAmount: safeTotalAmount,
+    transactionIds: created.map(item => normalizeId(item.transactionId || item.TransactionId || item._id)),
+    createdCount: created.length
+  }
+}
+
+const createLeagueCupTransaction = async ({ managerSelect, amountWon, weekId, transactionDate, notes }) => {
+  return createPayoutTransaction({
+    managerSelect,
+    amountWon,
+    weekId,
+    transactionDate,
+    notes,
+    transactionType: 'League or Cup'
+  })
 }
 
 const transactionQueryById = (transactionId) => {
@@ -956,10 +1620,29 @@ const BASELINE_CUP_PRIZES = {
   cupRunnerUp: 10
 }
 const CUP_PRIZE_KEYS = ['cupWin', 'leagueCupWin', 'leagueCupRunnerUp', 'cupRunnerUp']
+const FIXED_PRIZES = {
+  fiveFivers: 5,
+  weeklyPrize: 6
+}
 
 const roundCurrency = (value) => Math.round((Number(value) + Number.EPSILON) * 100) / 100
 
 const sum = (values) => values.reduce((total, value) => total + value, 0)
+
+const ordinal = (position) => {
+  const value = Number(position) || 0
+  const remainder100 = value % 100
+
+  if (remainder100 >= 11 && remainder100 <= 13) {
+    return `${value}th`
+  }
+
+  const remainder10 = value % 10
+  if (remainder10 === 1) return `${value}st`
+  if (remainder10 === 2) return `${value}nd`
+  if (remainder10 === 3) return `${value}rd`
+  return `${value}th`
+}
 
 const buildLeagueWeights = (managers) => {
   const safeManagers = Math.max(1, Number(managers) || 1)
@@ -1072,11 +1755,17 @@ const allocateCupPrizes = (cupPool) => {
   }
 }
 
-const calculatePrizePlan = ({ managers, weeks, weeklyFee, leagueEntryFee, cupEntryFee, leagueCupEntryFee }) => {
+const calculatePrizePlan = ({ managers, weeks, weeklyFee, leagueEntryFee, jackpotRemaining, cupEntryFee, leagueCupEntryFee }) => {
   const safeManagers = Math.max(1, Number(managers) || 1)
   const safeWeeks = Math.max(1, Number(weeks) || 1)
   const safeWeeklyFee = Math.max(0, Number(weeklyFee) || 0)
   const safeLeagueEntryFee = Math.max(0, Number(leagueEntryFee) || 5)
+  const jackpotSeasonTotal = safeWeeks * 2
+  const parsedJackpotRemaining = Number(jackpotRemaining)
+  const safeJackpotRemaining = Math.max(
+    0,
+    Math.min(Number.isNaN(parsedJackpotRemaining) ? jackpotSeasonTotal : parsedJackpotRemaining, jackpotSeasonTotal)
+  )
   const safeCupEntryFee = Math.max(0, Number(cupEntryFee) || 0)
   const safeLeagueCupEntryFee = Math.max(0, Number(leagueCupEntryFee) || 0)
 
@@ -1087,10 +1776,11 @@ const calculatePrizePlan = ({ managers, weeks, weeklyFee, leagueEntryFee, cupEnt
   const prizePot = weeklyIncome + leagueEntryIncome + cupIncome + leagueCupIncome
 
   const fiversTotal = 225
-  const jackpotAllocation = safeWeeks * 2
+  const jackpotAllocation = safeJackpotRemaining
+  const jackpotPaidOut = Math.max(0, jackpotSeasonTotal - jackpotAllocation)
   const weeklyPrizesTotal = safeWeeks * 6
 
-  const competitionsPool = Math.max(0, prizePot - fiversTotal - jackpotAllocation - weeklyPrizesTotal)
+  const competitionsPool = Math.max(0, prizePot - fiversTotal - jackpotPaidOut - weeklyPrizesTotal)
 
   const baselineLeagueTotal = sum(BASELINE_LEAGUE_PRIZES)
   const baselineCupTotal = sum(Object.values(BASELINE_CUP_PRIZES))
@@ -1138,6 +1828,7 @@ const calculatePrizePlan = ({ managers, weeks, weeklyFee, leagueEntryFee, cupEnt
       weeks: safeWeeks,
       weeklyFee: safeWeeklyFee,
       leagueEntryFee: safeLeagueEntryFee,
+      jackpotRemaining: jackpotAllocation,
       cupEntryFee: safeCupEntryFee,
       leagueCupEntryFee: safeLeagueCupEntryFee
     },
@@ -1149,7 +1840,9 @@ const calculatePrizePlan = ({ managers, weeks, weeklyFee, leagueEntryFee, cupEnt
       prizePot: roundCurrency(prizePot),
       incomePerManager: roundCurrency(prizePot / safeManagers),
       fiversTotal: roundCurrency(fiversTotal),
-      jackpotAllocation: roundCurrency(jackpotAllocation),
+      jackpotSeasonTotal: roundCurrency(jackpotSeasonTotal),
+      jackpotPaidOut: roundCurrency(jackpotPaidOut),
+      jackpotRemaining: roundCurrency(jackpotAllocation),
       weeklyPrizesTotal: roundCurrency(weeklyPrizesTotal),
       competitionsPool: roundCurrency(competitionsPool),
       leaguePool: roundCurrency(leaguePool),
@@ -1179,12 +1872,21 @@ module.exports = {
   getIndividualWinnings,
   getGameWeeks,
   getAllTransactions,
+  getLeagueSnapshot,
   getAdminFees,
   getAdminPrizes,
   getAdminSeason,
+  createAdminSeason,
+  getAdminActionQueue,
   createAdminPrize,
+  replaceAdminPrizesFromPlan,
   getAdhocManagers,
   createAdhocTransaction,
+  createWeeklyTransaction,
+  createFiverTransaction,
+  getJackpotAmountForWeek,
+  createJackpotTransaction,
+  createLeagueCupTransaction,
   getTransactionById,
   updateTransaction,
   deleteTransaction,

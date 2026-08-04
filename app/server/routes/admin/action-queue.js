@@ -3,13 +3,13 @@ const { requireAdmin } = require('../../auth')
 
 module.exports = [{
   method: 'GET',
-  path: '/admin/fees',
+  path: '/admin/action-queue',
   config: {
     auth: 'jwt',
     pre: [requireAdmin]
   },
   handler: async (_request, h) => {
-    const fees = await financeService.getAdminFees()
-    return h.response(fees).code(200)
+    const queue = await financeService.getAdminActionQueue()
+    return h.response(queue).code(200)
   }
 }]

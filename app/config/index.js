@@ -9,18 +9,9 @@ const schema = joi.object().keys({
     secret: joi.string(),
     expiryInMinutes: joi.number().default(43800)
   }),
-  smtp: joi.object({
-    host: joi.string().allow(''),
-    port: joi.number().default(587),
-    secure: joi.boolean().default(false),
-    requireTLS: joi.boolean().default(true),
-    auth: joi.object({
-      user: joi.string().allow(''),
-      pass: joi.string().allow('')
-    })
-  }),
   webUrl: joi.string().uri().default('http://localhost:3000'),
-  allowNonMemberRegistration: joi.boolean().default(false)
+  allowNonMemberRegistration: joi.boolean().default(false),
+  winnersApiUrl: joi.string().uri().allow('', null).default('')
 })
 
 // Build config
@@ -31,18 +22,9 @@ const config = {
     secret: process.env.JWT_SECRET,
     expiryInMinutes: process.env.JWT_EXPIRY_IN_MINUTES
   },
-  smtp: {
-    host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT,
-    secure: process.env.SMTP_SECURE,
-    requireTLS: process.env.SMTP_TLS,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASSWORD
-    }
-  },
   webUrl: process.env.WEB_URL,
-  allowNonMemberRegistration: process.env.ALLOW_NON_MEMBER_REGISTRATION
+  allowNonMemberRegistration: process.env.ALLOW_NON_MEMBER_REGISTRATION,
+  winnersApiUrl: process.env.WINNERS_API_URL
 }
 
 // Validate config

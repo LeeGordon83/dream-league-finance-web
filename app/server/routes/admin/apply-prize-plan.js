@@ -4,7 +4,7 @@ const { requireAdmin } = require('../../auth')
 
 module.exports = [{
   method: 'POST',
-  path: '/admin/prize-plan',
+  path: '/admin/prize-plan/apply',
   config: {
     auth: 'jwt',
     pre: [requireAdmin],
@@ -21,7 +21,7 @@ module.exports = [{
     }
   },
   handler: async (request, h) => {
-    const result = financeService.calculatePrizePlan(request.payload)
-    return h.response(result).code(200)
+    const response = await financeService.replaceAdminPrizesFromPlan(request.payload)
+    return h.response(response).code(200)
   }
 }]

@@ -34,40 +34,20 @@ const findManagerByEmail = async (email) => {
 const createToken = (manager) => {
   const secret = config.jwtConfig.secret || 'development-secret-change-me'
   const expiryInMinutes = Number(config.jwtConfig.expiryInMinutes) || 43800
+  
+  const scope = ['user']
+  if (manager.isAdmin || manager.IsAdmin) {
+    scope.push('admin')
+  }
 
   return jwt.sign({
     sub: String(manager.managerId || manager.ManagerId || manager._id),
     email: readManagerEmail(manager),
-    managerName: readManagerName(manager)
+    managerName: readManagerName(manager),
+    scope
   }, secret, {
     expiresIn: `${expiryInMinutes}m`
   })
-}
-
-const register = async ({ managerName, email, password }) => {
-  const normalizedEmail = normalizeEmail(email)
-  const existing = await findManagerByEmail(normalizedEmail)
-
-  if (!existing) {
-    throw boom.unauthorized('You are not registered as a dream league member')
-  }
-
-  const passwordHash = await bcrypt.hash(password, SALT_ROUNDS)
-
-  const manager = await Manager.updateOne({ _id: existing._id }, {
-    $set: {
-      managerName,
-      passwordHash
-    }
-  })
-
-  const updated = await findManagerByEmail(normalizedEmail)
-  const token = createToken(updated)
-
-  return {
-    token,
-    manager: toSafeManager(updated)
-  }
 }
 
 const login = async ({ email, password }) => {
@@ -95,7 +75,7 @@ const forgotPassword = async ({ email }) => {
 
   if (!manager) {
     return {
-      message: 'If an account exists for that email, a reset link has been generated.'
+      message: 'If an account exists for that email, a reset token has been generated.'
     }
   }
 
@@ -111,10 +91,10 @@ const forgotPassword = async ({ email }) => {
   })
 
   const response = {
-    message: 'If an account exists for that email, a reset link has been generated.'
+    message: 'If an account exists for that email, a reset token has been generated.'
   }
 
-  // Expose the token in development to unblock local testing until email delivery is wired.
+  // Expose the token in development to support manual/local password resets.
   if (config.isDev) {
     response.resetToken = resetToken
   }
@@ -161,7 +141,6 @@ const resetPassword = async ({ token, password }) => {
 }
 
 module.exports = {
-  register,
   login,
   forgotPassword,
   resetPassword

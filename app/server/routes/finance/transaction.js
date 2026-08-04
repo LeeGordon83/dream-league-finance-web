@@ -1,5 +1,6 @@
 const joi = require('joi')
 const financeService = require('../../services/finance')
+const { requireAdmin } = require('../../auth')
 
 const TRANSACTION_TYPES = [
   'Ad-Hoc',
@@ -12,6 +13,8 @@ module.exports = [{
   method: 'GET',
   path: '/finance/transaction/{transactionId}',
   config: {
+    auth: 'jwt',
+    pre: [requireAdmin],
     validate: {
       params: joi.object({
         transactionId: joi.string().required()
@@ -31,6 +34,8 @@ module.exports = [{
   method: 'POST',
   path: '/finance/transaction/update',
   config: {
+    auth: 'jwt',
+    pre: [requireAdmin],
     validate: {
       payload: joi.object({
         transactionId: joi.string().required(),
@@ -55,6 +60,8 @@ module.exports = [{
   method: 'POST',
   path: '/finance/transaction/delete',
   config: {
+    auth: 'jwt',
+    pre: [requireAdmin],
     validate: {
       payload: joi.object({
         transactionId: joi.string().required()

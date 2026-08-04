@@ -24,6 +24,7 @@ const createServer = async () => {
   // Register the plugins
   await server.register(require('@hapi/inert'))
   await server.register(require('hapi-auth-jwt2'))
+  await server.register(require('./plugins/auth'))
   await server.register(require('./plugins/router'))
 
   if (config.isDev) {
