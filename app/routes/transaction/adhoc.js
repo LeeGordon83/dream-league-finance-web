@@ -1,10 +1,20 @@
 const api = require('../../api')
 const joi = require('joi')
+const { isInRole } = require('../../auth')
+
+const requireAdmin = (request, h) => {
+  if (!isInRole(request.auth.credentials, 'admin')) {
+    return h.redirect('/').takeover()
+  }
+
+  return h.continue
+}
 
 module.exports = [{
   method: 'GET',
   path: '/transaction/adhoc',
   config: {
+    pre: [requireAdmin]
   },
   handler: async (request, h) => {
     const managers = await api.get('/transaction/adhoc', request.dl_token)
@@ -14,6 +24,7 @@ module.exports = [{
   method: 'POST',
   path: '/transaction/adhoc',
   options: {
+    pre: [requireAdmin],
     validate: {
       payload: joi.object({
         amountPaid: joi.number().required(),

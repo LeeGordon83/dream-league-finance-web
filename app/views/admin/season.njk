@@ -2,24 +2,42 @@
 
 {% block content %}
 
-  <h2>Season</h2>
-  <br/>
+  <div class="season-page">
+    <div class="mb-4">
+      <h2 class="mb-1">Season</h2>
+      <p class="text-muted mb-0">Manage league season setup and check the current season at a glance.</p>
+    </div>
 
-  {% if season.weeks | length %}
-    {% include "./admin/_currentSeason.njk" %}
-  {% else %}
-    <form method="POST" action="admin/season">
-      <input type="hidden" name="crumb" value="{{crumb}}"/>
-      <div class="form-group">
-        <label for="startDate">Week Start Date</label>
-        <input type="date" class="form-control" id="startDate" name="startDate">
+    {% if season.weeks | length %}
+      {% include "./admin/_currentSeason.njk" %}
+    {% else %}
+      <div class="card season-shell">
+        <div class="card-body p-4">
+          <h4 class="mb-1">Start New Season</h4>
+          <p class="text-muted mb-4">Choose the first week start date and total number of weeks.</p>
+
+          {% if error %}
+            <div class="alert alert-danger">{{ error.message }}</div>
+          {% endif %}
+
+          <form method="POST" action="/admin/season">
+            <input type="hidden" name="crumb" value="{{crumb}}"/>
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                <label for="startDate">Week Start Date</label>
+                <input type="date" class="form-control" id="startDate" name="startDate" value="{{ values.startDate }}" required>
+              </div>
+              <div class="form-group col-md-6">
+                <label for="weekNum">Number of Weeks</label>
+                <input type="number" class="form-control" id="weekNum" name="weekNum" min="1" max="50" value="{{ values.weekNum }}" required>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary px-4">Start Season</button>
+          </form>
+        </div>
       </div>
-      <div class="form-group">
-        <label for="weekNum">Number of Weeks</label>
-        <input type="number" class="form-control" id="weekNum" name="weekNum" min="1" max="50">
-      </div>
-      <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
-  {% endif %}
+    {% endif %}
+  </div>
 
 {% endblock %}

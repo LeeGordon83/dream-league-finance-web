@@ -2,9 +2,102 @@
 
 {% block content %}
 
-<h2>Fivers</h2>
-<hr />
-<br />
+	<h2>Fivers</h2>
+	<p class="text-muted">Record five £5 winners. Week is worked out automatically from transaction date.</p>
 
+	{% if error %}
+		<div class="alert alert-danger">{{ error.message }}</div>
+	{% endif %}
+
+	<form method="POST" action="/transaction/fivers">
+		<input type="hidden" name="crumb" value="{{ crumb }}"/>
+
+		<div class="form-row">
+			<div class="form-group col-md-6">
+				<label for="winner1">Winner 1</label>
+				<select id="winner1" class="form-control" name="winner1" required>
+					<option value="" disabled {% if not values.winner1 %}selected{% endif %}>Select a manager</option>
+					{% for manager in managers %}
+						<option value="{{ manager.managerId }}" {% if values.winner1 == manager.managerId %}selected{% endif %}>{{ manager.name }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div class="form-group col-md-6">
+				<label for="winner2">Winner 2</label>
+				<select id="winner2" class="form-control" name="winner2" required>
+					<option value="" disabled {% if not values.winner2 %}selected{% endif %}>Select a manager</option>
+					{% for manager in managers %}
+						<option value="{{ manager.managerId }}" {% if values.winner2 == manager.managerId %}selected{% endif %}>{{ manager.name }}</option>
+					{% endfor %}
+				</select>
+			</div>
+		</div>
+
+		<div class="form-row">
+			<div class="form-group col-md-6">
+				<label for="winner3">Winner 3</label>
+				<select id="winner3" class="form-control" name="winner3" required>
+					<option value="" disabled {% if not values.winner3 %}selected{% endif %}>Select a manager</option>
+					{% for manager in managers %}
+						<option value="{{ manager.managerId }}" {% if values.winner3 == manager.managerId %}selected{% endif %}>{{ manager.name }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div class="form-group col-md-6">
+				<label for="winner4">Winner 4</label>
+				<select id="winner4" class="form-control" name="winner4" required>
+					<option value="" disabled {% if not values.winner4 %}selected{% endif %}>Select a manager</option>
+					{% for manager in managers %}
+						<option value="{{ manager.managerId }}" {% if values.winner4 == manager.managerId %}selected{% endif %}>{{ manager.name }}</option>
+					{% endfor %}
+				</select>
+			</div>
+		</div>
+
+		<div class="form-row">
+			<div class="form-group col-md-6">
+				<label for="winner5">Winner 5</label>
+				<select id="winner5" class="form-control" name="winner5" required>
+					<option value="" disabled {% if not values.winner5 %}selected{% endif %}>Select a manager</option>
+					{% for manager in managers %}
+						<option value="{{ manager.managerId }}" {% if values.winner5 == manager.managerId %}selected{% endif %}>{{ manager.name }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div class="form-group col-md-6"></div>
+		</div>
+
+		<div class="form-row">
+			<div class="form-group col-md-6">
+				<label for="transactionDate">Transaction Date</label>
+				<input type="date" class="form-control" id="transactionDate" name="transactionDate" value="{{ values.transactionDate }}" required>
+			</div>
+			<div class="form-group col-md-6">
+				<label for="notes">Notes (optional)</label>
+				<input type="text" class="form-control" id="notes" name="notes" value="{{ values.notes }}" placeholder="e.g. Gameweek 1 fivers">
+			</div>
+		</div>
+
+		<button type="submit" class="btn btn-primary">Submit Fivers</button>
+	</form>
+
+	<script>
+		(function () {
+			const selects = Array.from(document.querySelectorAll('select[name^="winner"]'))
+
+			function updateDisabled () {
+				const chosen = new Set(selects.map(s => s.value).filter(Boolean))
+				selects.forEach(function (sel) {
+					Array.from(sel.options).forEach(function (opt) {
+						if (!opt.value) return
+						opt.disabled = chosen.has(opt.value) && opt.value !== sel.value
+					})
+				})
+			}
+
+			selects.forEach(function (sel) { sel.addEventListener('change', updateDisabled) })
+			updateDisabled()
+		})()
+	</script>
 
 {% endblock %}

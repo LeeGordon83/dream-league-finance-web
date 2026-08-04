@@ -1,11 +1,10 @@
 const routes = [].concat(
   require('../routes/home'),
+  require('../routes/prizes'),
   require('../routes/about'),
-  require('../routes/history'),
   require('../routes/cookies'),
   require('../routes/public'),
   require('../routes/account/login'),
-  require('../routes/account/register'),
   require('../routes/account/forgot-password'),
   require('../routes/account/reset-password'),
   require('../routes/account/logout'),
@@ -24,7 +23,6 @@ const routes = [].concat(
   require('../routes/finance/winnings'),
   require('../routes/finance/individual-winnings'),
   require('../routes/finance/game-weeks'),
-  require('../routes/admin/email'),
   require('../routes/admin/fees'),
   require('../routes/admin/managers'),
   require('../routes/admin/add-manager'),
@@ -33,9 +31,10 @@ const routes = [].concat(
   require('../routes/admin/prizes'),
   require('../routes/admin/create-prize'),
   require('../routes/admin/prize-plan'),
-  require('../routes/admin/season')
+  require('../routes/admin/payout-simulator'),
+  require('../routes/admin/season'),
   // require('../routes/admin/add-history'),
-  // require('../routes/admin/weekly-update')
+  require('../routes/admin/weekly-update')
 )
 
 module.exports = {

@@ -1,0 +1,80 @@
+{% extends '_layout.njk' %}
+
+{% block content %}
+
+  <h2>Run Weekly Update</h2>
+  <p class="text-muted">Latest weekly winners pulled from the API.</p>
+
+  {% if error %}
+    <div class="alert alert-danger">{{ error.message }}</div>
+  {% endif %}
+
+  {% if update.warning %}
+    <div class="alert alert-warning">{{ update.warning }}</div>
+  {% endif %}
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <p class="mb-1"><strong>Current Week:</strong>
+        {% if update.currentWeek %}
+          {{ update.currentWeek }}
+        {% else %}
+          Not available
+        {% endif %}
+      </p>
+      <p class="mb-0"><strong>Latest Recorded Weekly Winners:</strong>
+        {% if update.latestRecordedWeek %}
+          Week {{ update.latestRecordedWeek }}
+        {% else %}
+          None recorded yet
+        {% endif %}
+      </p>
+    </div>
+  </div>
+
+  {% if update.latestRecordedWeek %}
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <div class="card h-100">
+          <div class="card-header">Weekly Winners</div>
+          <div class="card-body">
+            {% if update.weeklyWinners and update.weeklyWinners.length %}
+              <ul class="mb-0">
+                {% for winner in update.weeklyWinners %}
+                  <li>{{ winner }}</li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="mb-0 text-muted">No weekly winners found for this week.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <div class="card h-100">
+          <div class="card-header">Jackpot Winners (Same Week)</div>
+          <div class="card-body">
+            {% if update.jackpotWinners and update.jackpotWinners.length %}
+              <ul class="mb-0">
+                {% for winner in update.jackpotWinners %}
+                  <li>{{ winner }}</li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="mb-0 text-muted">No jackpot winners recorded for this week.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if update.hasWeeklyForCurrentWeek == false %}
+    <div class="alert alert-warning">
+      Weekly winners have not been recorded for the current week yet.
+      Add entries via <a href="/transaction/weekly">Transaction > Weekly</a>.
+    </div>
+  {% endif %}
+
+{% endblock %}

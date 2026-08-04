@@ -1,10 +1,20 @@
 const joi = require('joi')
 const api = require('../../api')
+const { isInRole } = require('../../auth')
+
+const requireAdmin = (request, h) => {
+  if (!isInRole(request.auth.credentials, 'admin')) {
+    return h.redirect('/').takeover()
+  }
+
+  return h.continue
+}
 
 module.exports = [{
   method: 'GET',
   path: '/finance/delete-transaction',
   options: {
+    pre: [requireAdmin],
     validate: {
       query: joi.object({
         transactionId: joi.string().required()

@@ -1,5 +1,14 @@
 const joi = require('joi')
 const api = require('../../api')
+const { isInRole } = require('../../auth')
+
+const requireAdmin = (request, h) => {
+  if (!isInRole(request.auth.credentials, 'admin')) {
+    return h.redirect('/').takeover()
+  }
+
+  return h.continue
+}
 
 const TRANSACTION_TYPES = [
   'Ad-Hoc',
@@ -25,6 +34,7 @@ module.exports = [{
   method: 'GET',
   path: '/finance/edit-transaction',
   options: {
+    pre: [requireAdmin],
     validate: {
       query: joi.object({
         transactionId: joi.string().required()
@@ -49,6 +59,7 @@ module.exports = [{
   method: 'POST',
   path: '/finance/edit-transaction',
   options: {
+    pre: [requireAdmin],
     validate: {
       payload: joi.object({
         transactionId: joi.string().required(),

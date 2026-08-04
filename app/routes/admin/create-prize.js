@@ -1,9 +1,21 @@
 const joi = require('joi')
 const api = require('../../api')
+const { isInRole } = require('../../auth')
+
+const requireAdmin = (request, h) => {
+  if (!isInRole(request.auth.credentials, 'admin')) {
+    return h.redirect('/').takeover()
+  }
+
+  return h.continue
+}
 
 module.exports = [{
   method: 'GET',
   path: '/admin/prizes/create',
+  config: {
+    pre: [requireAdmin]
+  },
   handler: (_request, h) => {
     return h.view('admin/create-prize')
   }
@@ -11,6 +23,7 @@ module.exports = [{
   method: 'POST',
   path: '/admin/prizes/create',
   options: {
+    pre: [requireAdmin],
     validate: {
       payload: joi.object({
         type: joi.string().trim().required(),

@@ -2,9 +2,58 @@
 
 {% block content %}
 
-<h2>Weekly Prize</h2>
-<hr />
-<br />
+	<h2>Weekly Prize</h2>
+	<p class="text-muted">Record one or more winners. The weekly prize is fixed at £6 and split equally between selected winners.</p>
+
+	{% if error %}
+		<div class="alert alert-danger">{{ error.message }}</div>
+	{% endif %}
+
+	<form method="POST" action="/transaction/weekly">
+		<input type="hidden" name="crumb" value="{{ crumb }}"/>
+
+		<div class="form-row">
+			<div class="form-group col-md-6">
+				<label for="managerSelect">Winner(s)</label>
+				<select id="managerSelect" class="form-control" name="managerSelect" multiple size="8" required>
+					{% for manager in managers %}
+						<option value="{{ manager.managerId }}"
+							{% if values and values.managerSelect and values.managerSelect.indexOf and values.managerSelect.indexOf(manager.managerId) > -1 %}
+								selected
+							{% endif %}
+						>{{ manager.name }}</option>
+					{% endfor %}
+				</select>
+				<small class="form-text text-muted">Hold Ctrl (Windows/Linux) or Cmd (Mac) to select multiple winners.</small>
+			</div>
+			<div class="form-group col-md-6"></div>
+		</div>
+
+		<div class="form-row">
+			<div class="form-group col-md-6">
+				<label for="weekId">Week</label>
+				<select id="weekId" class="form-control" name="weekId" required>
+					<option value="" disabled {% if not values.weekId %}selected{% endif %}>Select week</option>
+					{% for week in weeks %}
+						<option value="{{ week.weekId }}" {% if values.weekId == week.weekId %}selected{% endif %}>Week {{ week.weekId }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div class="form-group col-md-6">
+				<label for="transactionDate">Transaction Date</label>
+				<input type="date" class="form-control" id="transactionDate" name="transactionDate" value="{{ values.transactionDate }}" required>
+			</div>
+		</div>
+
+		<div class="form-row">
+			<div class="form-group col-md-12">
+				<label for="notes">Notes (optional)</label>
+				<input type="text" class="form-control" id="notes" name="notes" value="{{ values.notes }}" placeholder="e.g. GW3 weekly prize">
+			</div>
+		</div>
+
+		<button type="submit" class="btn btn-primary">Submit Weekly Prize</button>
+	</form>
 
 
 {% endblock %}

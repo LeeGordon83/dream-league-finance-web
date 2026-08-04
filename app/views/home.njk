@@ -2,42 +2,122 @@
 
 {% block content %}
 <div class="jumbotron">
-  <h1>Dream League Finance</h1>
-  <p class="lead">Private Fantasy Football League Finances</p>
+    <h1>Dream League Finance</h1>
+    <p class="lead">League Snapshot</p>
 </div>
 
 <div class="row">
-  <div class="col-md-4">
-      <div class="panel panel-primary">
-          <div class="panel panel-heading">
-              <h3 style="text-align:center">Weekly Winners</h3>
-          </div>
-          <div class="panel-body">
-
-          </div>
-
+    <div class="col-md-3 mb-3">
+            <div class="card border-primary h-100">
+                    <div class="card-body text-center">
+                            <h6 class="text-muted">Total Paid In</h6>
+                            <h3>£{{ snapshot.totals.totalPaidIn.toFixed(2) }}</h3>
+                    </div>
       </div>
   </div>
-  <div class="col-md-4">
-      <div class="panel panel-primary">
-          <div class="panel panel-heading">
-              <h3 style="text-align:center">Last Fivers Won</h3>
-          </div>
-          <div class="panel-body">
-
-          </div>
+    <div class="col-md-3 mb-3">
+            <div class="card border-primary h-100">
+                    <div class="card-body text-center">
+                            <h6 class="text-muted">Total Paid Out</h6>
+                            <h3>£{{ snapshot.totals.totalPaidOut.toFixed(2) }}</h3>
+                    </div>
       </div>
   </div>
-  <div class="col-md-4">
-      <div class="panel panel-primary">
-          <div class="panel panel-heading">
-              <h3 style="text-align:center">Current Jackpot</h3>
+    <div class="col-md-3 mb-3">
+            <div class="card border-success h-100">
+                    <div class="card-body text-center">
+                            <h6 class="text-muted">Current Balance</h6>
+                            <h3>£{{ snapshot.totals.currentBalance.toFixed(2) }}</h3>
           </div>
-      <div class="panel-body">
-
       </div>
+    </div>
+    <div class="col-md-3 mb-3">
+            <div class="card border-warning h-100">
+                    <div class="card-body text-center">
+                            <h6 class="text-muted">Current Jackpot</h6>
+                            <h3>£{{ snapshot.totals.currentJackpot.toFixed(2) }}</h3>
+                    </div>
       </div>
-
   </div>
+</div>
+
+<div class="row mt-2">
+    <div class="col-md-6 mb-3">
+        <div class="card h-100">
+            <div class="card-header">Season Progress</div>
+            <div class="card-body">
+                <p class="mb-1"><strong>Current Week:</strong> {{ snapshot.season.currentWeek }} / {{ snapshot.season.totalWeeks }}</p>
+                <p class="mb-1"><strong>Weeks Remaining:</strong> {{ snapshot.season.weeksRemaining }}</p>
+                <p class="mb-0"><strong>Active Managers:</strong> {{ snapshot.season.activeManagers }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <div class="card h-100">
+            <div class="card-header">League Health</div>
+            <div class="card-body">
+                <p class="mb-1"><strong>Outstanding Contributions:</strong> £{{ snapshot.health.outstandingExpectedContributions.toFixed(2) }}</p>
+                <p class="mb-1"><strong>Managers Behind:</strong> {{ snapshot.health.managersBehindCount }}</p>
+                <p class="mb-0">
+                    <strong>Reconciliation Gap:</strong>
+                    £{{ snapshot.health.reconciliationGap.toFixed(2) }}
+                    {% if snapshot.health.hasReconciliationGap %}
+                        <span class="badge badge-warning">Needs review</span>
+                    {% else %}
+                        <span class="badge badge-success">OK</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mb-3">
+        <div class="card h-100">
+            <div class="card-header">Recent Transactions</div>
+            <div class="card-body p-0" style="max-height:260px;overflow-y:auto;">
+                <table class="table table-sm mb-0" style="border-collapse:separate;">
+                    <thead style="position:sticky;top:0;background:#fff;z-index:1;">
+                        <tr>
+                            <th>Date</th>
+                            <th>Manager</th>
+                            <th>Type</th>
+                            <th class="text-right" style="padding-right:1.5rem;">Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tx in snapshot.recentTransactions %}
+                        <tr>
+                            <td>{% if tx.date %}{{ tx.date | formatDate }}{% else %}-{% endif %}</td>
+                            <td>{{ tx.managerName or 'Unassigned' }}</td>
+                            <td>{{ tx.type }}</td>
+                            <td class="text-right" style="padding-right:1.5rem;">£{{ tx.value.toFixed(2) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% if actionQueue %}
+    <div class="col-md-4 mb-3">
+        <div class="card border-info h-100">
+            <div class="card-header">Admin Action Queue</div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for action in actionQueue.actions %}
+                    <li class="list-group-item px-0">
+                        <div><strong>{{ action.title }}</strong></div>
+                        <small>{{ action.description }}</small>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

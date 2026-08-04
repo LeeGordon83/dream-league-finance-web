@@ -11,7 +11,9 @@
       <script src="{{ assetPath }}/google-analytics.js"></script>
     {% endif %} #}
     <title>{{ appName }}</title>
-    <link rel="icon" type="image/x-icon" href="{{ assetPath }}/favicon.ico"/>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=3"/>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=3"/>
+    <link rel="icon" type="image/jpeg" href="{{ assetPath }}/football.jpg?v=1"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/blitzer/jquery-ui.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
@@ -63,11 +65,15 @@
               </div>
             </li>
           <li class="nav-item">
-            <a class="nav-link text-light" href="/about">About</a>
+            <a class="nav-link text-light" href="/prizes">Prizes</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link text-light" href="/history">History</a>
+            <a class="nav-link text-light" href="/payout-simulator">Payout Simulator</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link text-light" href="/about">About</a>
+          </li>
+          {% if auth.isAdmin %}
           <li class="nav-item">
             <a class="nav-link text-light" href="/transaction/select-transaction">Transaction</a>
           </li>
@@ -76,14 +82,12 @@
                 <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                 <a class="dropdown-item" href="/admin/season">Season</a>
                 <a class="dropdown-item" href="/admin/managers">Managers</a>
-                <a class="dropdown-item" href="/admin/prizes">Prizes</a>
                 <a class="dropdown-item" href="/admin/prize-plan">Prize Planner</a>
                 <a class="dropdown-item" href="/admin/fees">Fees</a>
-                <a class="dropdown-item" href="/admin/email">Emails</a>
                 <a class="dropdown-item" href="/admin/weekly-update">Run Weekly Update</a>
-                <a class="dropdown-item" href="/admin/add-history">Add Season History</a>
               </div>
             </li>
+          {% endif %}
         </ul>
         {% include "_login.njk" %}
           </div>

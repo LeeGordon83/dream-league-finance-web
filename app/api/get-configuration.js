@@ -1,8 +1,14 @@
 const getConfiguration = (token = '') => {
+  const headers = {
+    json: 'application/json'
+  }
+  
+  if (token) {
+    headers.Authorization = `Bearer ${token}`
+  }
+  
   return {
-    headers: {
-      Authorization: token
-    },
+    headers,
     json: true
   }
 }

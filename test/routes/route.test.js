@@ -60,7 +60,7 @@ describe('GET /', () => {
     expect(response.headers['content-type']).toContain('text/html')
     expect(response.result).toContain('Password reset')
   })
-  test('returns the admin email view', async () => {
+  test('returns 404 for admin email route', async () => {
     const request = {
       method: 'GET',
       url: '/admin/email'
@@ -68,9 +68,9 @@ describe('GET /', () => {
 
     const response = await server.inject(request)
 
-    expect(response.statusCode).toBe(200)
+    expect(response.statusCode).toBe(404)
     expect(response.headers['content-type']).toContain('text/html')
-    expect(response.result).toContain('Email Hub')
+    expect(response.result).toContain('Page Not Found')
   })
   test('returns the admin fees view', async () => {
     const request = {
@@ -303,7 +303,7 @@ describe('GET /', () => {
     expect(response.headers['content-type']).toContain('text/html')
     expect(response.result).toContain('About')
   })
-  test('returns the history view', async () => {
+  test('returns 404 for history route', async () => {
     const request = {
       method: 'GET',
       url: '/history'
@@ -311,9 +311,9 @@ describe('GET /', () => {
 
     const response = await server.inject(request)
 
-    expect(response.statusCode).toBe(200)
+    expect(response.statusCode).toBe(404)
     expect(response.headers['content-type']).toContain('text/html')
-    expect(response.result).toContain('History')
+    expect(response.result).toContain('Page Not Found')
   })
   test('returns the cookies view', async () => {
     const request = {

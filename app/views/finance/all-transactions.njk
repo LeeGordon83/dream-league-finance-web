@@ -49,7 +49,9 @@
             Notes
         </th>
 
+      {% if auth.isAdmin %}
       <th style="text-align:center"></th>
+      {% endif %}
 
     </tr>
 
@@ -74,10 +76,12 @@
           {{ transaction.notes }}
         </td>
 
+        {% if auth.isAdmin %}
         <td style="text-align:center">
           <a href="/finance/edit-transaction?transactionId={{ transaction.transactionId }}">Edit</a> |
           <a href="/finance/delete-transaction?transactionId={{ transaction.transactionId }}">Delete</a>
         </td>
+        {% endif %}
 
       </tr>
     {% endfor %}

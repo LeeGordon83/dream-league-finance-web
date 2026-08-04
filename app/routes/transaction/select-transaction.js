@@ -1,8 +1,19 @@
+const { isInRole } = require('../../auth')
+
+const requireAdmin = (request, h) => {
+  if (!isInRole(request.auth.credentials, 'admin')) {
+    return h.redirect('/').takeover()
+  }
+
+  return h.continue
+}
+
 module.exports = [
   {
     method: 'GET',
     path: '/transaction/select-transaction',
     config: {
+      pre: [requireAdmin]
     },
     handler: async (request, h) => {
       return h.view('transaction/select-transaction')
@@ -11,7 +22,9 @@ module.exports = [
   {
     method: 'POST',
     path: '/transaction/select-transaction',
-    config: {},
+    config: {
+      pre: [requireAdmin]
+    },
     handler: async (request, h) => {
       const redirectRoute = request.payload.transactionType
 

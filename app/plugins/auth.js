@@ -5,6 +5,12 @@ module.exports = {
   plugin: {
     name: 'auth',
     register: (server, _options) => {
+      // Keep legacy route handlers working by exposing the token on request.
+      server.ext('onPostAuth', (request, h) => {
+        request.dl_token = request.auth?.token || request.state?.dl_token || ''
+        return h.continue
+      })
+
       server.auth.strategy('jwt', 'jwt', {
         key: jwtConfig.secret,
         validate,
