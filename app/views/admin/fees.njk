@@ -7,31 +7,24 @@
 
   <table class="table table-hover table-sm small">
     <tr>
-      <th style="text-align:center">
-            Fee Type
-        </th>
-      <th style="text-align:center">
-            Amount
-        </th>
+      <th style="text-align:center">Fee Type</th>
+      <th style="text-align:center">Amount</th>
       <th style="text-align:center"></th>
     </tr>
 
     {% for fee in fees %}
       <tr>
+        <td style="text-align:center">{{ fee.type }}</td>
+        <td style="text-align:center">{{ fee.amount }}</td>
         <td style="text-align:center">
-          {{ fee.type }}
+          <a href="/admin/fees/edit?feeId={{ fee.id }}">Edit</a>
+          &nbsp;|&nbsp;
+          <a href="/admin/fees/delete?feeId={{ fee.id }}" onclick="return confirm('Delete {{ fee.type }}?')">Delete</a>
         </td>
-        <td style="text-align:center">
-          {{ fee.amount }}
-        </td>
-        <td style="text-align:center">
-            Edit
-        </td>
-
       </tr>
     {% endfor %}
 
   </table>
 
-  <a href="/admin/fees/create">Create</a>
+  <a href="/admin/fees/create" class="btn btn-primary btn-sm">Create Fee</a>
 {% endblock %}

@@ -1,0 +1,30 @@
+{% extends '_layout.njk' %}
+
+{% block content %}
+
+  <h2>Create Fee</h2>
+  <br/>
+
+  <form method="POST" action="/admin/fees/create">
+    <input type="hidden" name="crumb" value="{{crumb}}"/>
+
+    <div class="form-group">
+      <label for="type">Fee Type</label>
+      <input type="text" class="form-control" id="type" name="type" value="{{ type }}" required>
+    </div>
+
+    <div class="form-group">
+      <label for="amount">Amount</label>
+      <input type="number" class="form-control" id="amount" name="amount" min="0" step="any" value="{{ amount }}" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create Fee</button>
+    <a class="btn btn-link" href="/admin/fees">Cancel</a>
+  </form>
+
+  {% if message %}
+    <br/>
+    <p>{{ message }}</p>
+  {% endif %}
+
+{% endblock %}
