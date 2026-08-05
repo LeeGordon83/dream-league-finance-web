@@ -99,6 +99,37 @@ const calculateFeesOwedToDate = (fees, gameWeeks) => {
   return roundCurrency(owed)
 }
 
+const calculateTotalSeasonFees = (fees, gameWeeks) => {
+  const allWeeks = gameWeeks || []
+  const allMonths = new Set(
+    allWeeks
+      .map(week => toDate(week.start))
+      .filter(Boolean)
+      .map(date => monthFormatter.format(date))
+  )
+
+  const weeklyFee = getFeeAmount(fees, 'Weekly')
+  const joiningFee = getFeeAmount(fees, 'Joining Fee')
+  const cupFee = getFeeAmount(fees, 'Cup Entry')
+  const leagueCupFee = getFeeAmount(fees, 'League Cup Entry')
+
+  let owed = allWeeks.length * weeklyFee
+
+  if (allWeeks.length > 0) {
+    owed += joiningFee
+  }
+
+  if (allMonths.has('September')) {
+    owed += cupFee
+  }
+
+  if (allMonths.has('January')) {
+    owed += leagueCupFee
+  }
+
+  return roundCurrency(owed)
+}
+
 const buildViewModel = ({ base, values, result, error }) => {
   const managers = (base && Array.isArray(base.managers)) ? base.managers : []
   const maxLeaguePosition = Math.max(1, Number((base && base.maxLeaguePosition) || managers.length || 1))
@@ -197,6 +228,7 @@ const calculateScenario = ({ selectedManager, transactions, prizeLookup, snapsho
   const jackpotTotal = sumByTypes(transactions, new Set(['Jackpot']))
   const paidIn = sumByTypes(transactions, new Set(['Ad-Hoc']))
   const feesOwedToDate = calculateFeesOwedToDate(fees, gameWeeks)
+  const totalSeasonFees = calculateTotalSeasonFees(fees, gameWeeks)
   const outstandingContributions = roundCurrency(Math.max(0, feesOwedToDate - paidIn))
   const winningsToDate = roundCurrency(weeklyTotal + fiversTotal + jackpotTotal)
 
@@ -219,7 +251,7 @@ const calculateScenario = ({ selectedManager, transactions, prizeLookup, snapsho
 
   const scenarioPayout = roundCurrency(leaguePrize + cupPrize + leagueCupPrize + jackpotPrize)
   const projectedTotalWinnings = roundCurrency(winningsToDate + scenarioPayout)
-  const projectedNetPosition = roundCurrency(projectedTotalWinnings - feesOwedToDate)
+  const projectedNetPosition = roundCurrency(projectedTotalWinnings - totalSeasonFees)
 
   return {
     managerName,
@@ -244,6 +276,7 @@ const calculateScenario = ({ selectedManager, transactions, prizeLookup, snapsho
     },
     projected: {
       projectedTotalWinnings,
+      totalSeasonFees,
       projectedNetPosition
     }
   }

@@ -121,7 +121,7 @@
     <div class="alert alert-info mb-4">
       <strong>Projected Total Winnings:</strong> £{{ result.projected.projectedTotalWinnings.toFixed(2) }}
       <br />
-      <strong>Projected Net Position (winnings - fees owed):</strong> £{{ result.projected.projectedNetPosition.toFixed(2) }}
+      <strong>Projected Net Position (winnings - total season fees of £{{ result.projected.totalSeasonFees.toFixed(2) }}):</strong> £{{ result.projected.projectedNetPosition.toFixed(2) }}
     </div>
   {% endif %}
 </div>
