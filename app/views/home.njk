@@ -84,6 +84,7 @@
                             <th>Date</th>
                             <th>Manager</th>
                             <th>Type</th>
+                            <th></th>
                             <th class="text-right" style="padding-right:1.5rem;">Value</th>
                         </tr>
                     </thead>
@@ -93,6 +94,13 @@
                             <td>{% if tx.date %}{{ tx.date | formatDate }}{% else %}-{% endif %}</td>
                             <td>{{ tx.managerName or 'Unassigned' }}</td>
                             <td>{{ tx.type }}</td>
+                            <td class="text-right" style="padding-right:1.5rem;">
+                                {% if tx.direction == 'in' %}
+                                    <span class="badge badge-success" style="min-width:2.5rem;display:inline-block;">In</span>
+                                {% else %}
+                                    <span class="badge badge-danger" style="min-width:2.5rem;display:inline-block;">Out</span>
+                                {% endif %}
+                            </td>
                             <td class="text-right" style="padding-right:1.5rem;">£{{ tx.value.toFixed(2) }}</td>
                         </tr>
                         {% endfor %}
