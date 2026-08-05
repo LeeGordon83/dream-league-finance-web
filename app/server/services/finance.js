@@ -1049,6 +1049,7 @@ const getLeagueSnapshot = async () => {
         id: normalizeId(transaction.transactionId || transaction.TransactionId || transaction._id),
         managerName: transactionManagerName(transaction, managerById),
         type: toTransactionType(transaction),
+        direction: toTransactionType(transaction) === 'Ad-Hoc' ? 'in' : 'out',
         value: toTransactionValue(transaction),
         date,
         weekNo: Number(transactionWeekNo(transaction)) || 0
