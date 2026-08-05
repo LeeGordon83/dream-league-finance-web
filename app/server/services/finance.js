@@ -803,11 +803,61 @@ const getAdminFees = async () => {
 
   return fees
     .map(fee => ({
+      id: String(fee._id),
       type: toFeeType(fee),
       amount: toFeeAmount(fee)
     }))
     .filter(fee => fee.type)
     .sort((a, b) => a.type.localeCompare(b.type))
+}
+
+const createAdminFee = async ({ type, amount }) => {
+  const created = await Fee.create({
+    feeType: String(type || '').trim(),
+    feeAmount: Number(amount || 0)
+  })
+
+  return {
+    id: String(created._id),
+    type: toFeeType(created),
+    amount: toFeeAmount(created)
+  }
+}
+
+const updateAdminFee = async ({ id, type, amount }) => {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return null
+  }
+
+  const updated = await Fee.findByIdAndUpdate(
+    id,
+    { $set: { feeType: String(type || '').trim(), feeAmount: Number(amount || 0) } },
+    { new: true }
+  ).lean()
+
+  if (!updated) {
+    return null
+  }
+
+  return {
+    id: String(updated._id),
+    type: toFeeType(updated),
+    amount: toFeeAmount(updated)
+  }
+}
+
+const deleteAdminFee = async (id) => {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return null
+  }
+
+  const deleted = await Fee.findByIdAndDelete(id).lean()
+
+  if (!deleted) {
+    return null
+  }
+
+  return { success: true }
 }
 
 const getAdminPrizes = async () => {
@@ -1874,6 +1924,9 @@ module.exports = {
   getAllTransactions,
   getLeagueSnapshot,
   getAdminFees,
+  createAdminFee,
+  updateAdminFee,
+  deleteAdminFee,
   getAdminPrizes,
   getAdminSeason,
   createAdminSeason,
