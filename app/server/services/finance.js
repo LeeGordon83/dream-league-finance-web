@@ -369,13 +369,11 @@ const getBalance = async () => {
 
     if (type === 'Fiver') {
       fiverOut += value
-      currentTotalIn += value
       return
     }
 
     if (type === 'Jackpot') {
       jackpotOut += value
-      currentTotalIn += value
       return
     }
 
