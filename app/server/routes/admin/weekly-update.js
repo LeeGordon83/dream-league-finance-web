@@ -48,6 +48,13 @@ const readNames = (entry) => {
 
 const normalizeName = (value) => String(value || '').trim().toLowerCase().replace(/\s+/g, ' ')
 
+const sameWinners = (a, b) => {
+  const left = [...new Set((a || []).map(normalizeName))].sort()
+  const right = [...new Set((b || []).map(normalizeName))].sort()
+
+  return left.length === right.length && left.every((name, index) => name === right[index])
+}
+
 const readWinnerType = (entry) => {
   const raw = String(
     (entry && (entry.type || entry.prizeType || entry.category || entry.transactionType || entry.transaction_type)) ||
@@ -181,14 +188,32 @@ module.exports = [{
       : null
 
     const alreadyRecorded = latestWeekly
-      ? await financeService.hasWeeklyTransactionForWeek(Number(latestWeekly.weekId))
+      ? (await financeService.getWeeklyTransactionsForWeek(Number(latestWeekly.weekId))).length > 0
       : false
+
+    const weeks = await Promise.all(weeklyWinnersByWeek.map(async (entry) => {
+      const weekId = Number(entry.weekId)
+      const feedWinners = entry.managerNames || []
+      const recorded = await financeService.getWeeklyTransactionsForWeek(weekId)
+      const recordedWinners = recorded.map(item => item.managerName)
+
+      return {
+        weekId,
+        feedWinners,
+        recordedWinners,
+        status: !recorded.length
+          ? 'missing'
+          : (sameWinners(feedWinners, recordedWinners) ? 'in-sync' : 'changed')
+      }
+    }))
 
     return h.response({
       generatedAt: new Date().toISOString(),
       source,
       warning,
       currentWeek,
+      weeks,
+      pendingCount: weeks.filter(week => week.status !== 'in-sync').length,
       latestRecordedWeek: latestWeekly ? Number(latestWeekly.weekId) : null,
       weeklyWinners: latestWeekly ? (latestWeekly.managerNames || []) : [],
       jackpotWinners: latestJackpot ? (latestJackpot.managerNames || []) : [],
@@ -213,10 +238,6 @@ module.exports = [{
 
     if (!config.winnersApiUrl) {
       return h.response({ error: 'WINNERS_API_URL is not configured.' }).code(400)
-    }
-
-    if (await financeService.hasWeeklyTransactionForWeek(weekId)) {
-      return h.response({ error: `Weekly winnings for week ${weekId} have already been recorded.` }).code(409)
     }
 
     let external
@@ -249,6 +270,17 @@ module.exports = [{
       }).code(400)
     }
 
+    const existing = await financeService.getWeeklyTransactionsForWeek(weekId)
+
+    if (existing.length && sameWinners(winnerNames, existing.map(item => item.managerName))) {
+      return h.response({ error: `Weekly winnings for week ${weekId} are already up to date.` }).code(409)
+    }
+
+    // Names are resolved before any delete so a failed lookup can never leave the week with no transactions.
+    const replacedCount = existing.length
+      ? await financeService.deleteWeeklyTransactionsForWeek(weekId)
+      : 0
+
     const weeks = await financeService.getGameWeeks()
     const week = weeks.find(item => Number(item.weekId) === weekId)
 
@@ -259,6 +291,6 @@ module.exports = [{
       notes: `Weekly winnings for week ${weekId}`
     })
 
-    return h.response({ ...result, weekId, winners: winnerNames }).code(201)
+    return h.response({ ...result, weekId, winners: winnerNames, replacedCount }).code(201)
   }
 }]

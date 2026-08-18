@@ -1448,14 +1448,36 @@ const createWeeklyTransaction = async ({ managerSelect, weekId, transactionDate,
   }
 }
 
-const hasWeeklyTransactionForWeek = async (weekId) => {
+const getWeeklyTransactionsForWeek = async (weekId) => {
   const target = Number(weekId)
-  const transactions = await readTransactions()
+  const [transactions, managers] = await Promise.all([readTransactions(), readManagers()])
 
-  return transactions.some(transaction =>
-    toTransactionType(transaction) === 'Weekly' &&
-    Number(transactionWeekNo(transaction)) === target
-  )
+  return transactions
+    .filter(transaction =>
+      toTransactionType(transaction) === 'Weekly' &&
+      Number(transactionWeekNo(transaction)) === target
+    )
+    .map(transaction => {
+      const managerId = managerIdsForTransaction(transaction)[0] || ''
+      const manager = managers.find(item => normalizeId(item.managerId || item.ManagerId || item._id) === managerId)
+
+      return {
+        transactionId: normalizeId(transaction.transactionId || transaction.TransactionId || transaction._id),
+        managerId,
+        managerName: manager ? managerName(manager) : transactionManagerName(transaction, {}),
+        value: toTransactionValue(transaction)
+      }
+    })
+}
+
+const deleteWeeklyTransactionsForWeek = async (weekId) => {
+  const existing = await getWeeklyTransactionsForWeek(weekId)
+
+  await Promise.all(existing.map(item =>
+    Transaction.findOneAndDelete(transactionQueryById(item.transactionId))
+  ))
+
+  return existing.length
 }
 
 const createFiverTransaction = async ({ managerSelect, amountWon, weekId, transactionDate, notes }) => {
@@ -1945,7 +1967,8 @@ module.exports = {
   getAdhocManagers,
   createAdhocTransaction,
   createWeeklyTransaction,
-  hasWeeklyTransactionForWeek,
+  getWeeklyTransactionsForWeek,
+  deleteWeeklyTransactionsForWeek,
   createFiverTransaction,
   getJackpotAmountForWeek,
   createJackpotTransaction,
