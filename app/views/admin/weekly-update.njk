@@ -70,6 +70,23 @@
     </div>
   {% endif %}
 
+  {% if update.latestRecordedWeek %}
+    {% if update.alreadyRecorded %}
+      <div class="alert alert-success">
+        Weekly winnings for week {{ update.latestRecordedWeek }} have already been recorded.
+      </div>
+    {% elif update.weeklyWinners and update.weeklyWinners.length %}
+      <form method="POST" action="/admin/weekly-update" class="mb-3">
+        <input type="hidden" name="crumb" value="{{ crumb }}"/>
+        <input type="hidden" name="weekId" value="{{ update.latestRecordedWeek }}"/>
+        <button type="submit" class="btn btn-primary"
+          onclick="return confirm('Record weekly winnings for week {{ update.latestRecordedWeek }}?')">
+          Record Weekly Winnings for Week {{ update.latestRecordedWeek }}
+        </button>
+      </form>
+    {% endif %}
+  {% endif %}
+
   {% if update.hasWeeklyForCurrentWeek == false %}
     <div class="alert alert-warning">
       Weekly winners have not been recorded for the current week yet.
