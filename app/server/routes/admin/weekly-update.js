@@ -1,4 +1,3 @@
-const https = require('https')
 const config = require('../../../config')
 const financeService = require('../../services/finance')
 const { requireAdmin } = require('../../auth')
@@ -65,8 +64,9 @@ const readWinnerType = (entry) => {
 
 const groupWithNames = (entries) => {
   const map = {}
+  const rows = entries || []
 
-  (entries || []).forEach(entry => {
+  rows.forEach(entry => {
     const weekId = toWeekId(entry)
     if (!weekId) {
       return
@@ -117,24 +117,21 @@ const normalizeWinnersPayload = (payload) => {
   }
 }
 
-const fetchExternalWinners = (url) => new Promise((resolve, reject) => {
-  https.get(url, { headers: { Accept: 'application/json' } }, (res) => {
-    const chunks = []
-    res.on('data', chunk => chunks.push(chunk))
-    res.on('end', () => {
-      const body = Buffer.concat(chunks).toString()
-      if (res.statusCode < 200 || res.statusCode >= 300) {
-        return reject(new Error(`Winners endpoint returned ${res.statusCode}: ${body.slice(0, 200)}`))
-      }
-      try {
-        resolve(normalizeWinnersPayload(JSON.parse(body)))
-      } catch (e) {
-        reject(new Error(`Failed to parse winners response: ${e.message}`))
-      }
-    })
-    res.on('error', reject)
-  }).on('error', reject)
-})
+const fetchExternalWinners = async (url) => {
+  const response = await fetch(url, {
+    headers: {
+      Accept: 'application/json'
+    }
+  })
+
+  if (!response.ok) {
+    const body = await response.text().catch(() => '')
+    throw new Error(`Winners endpoint returned ${response.status}: ${body.slice(0, 200)}`)
+  }
+
+  const payload = await response.json()
+  return normalizeWinnersPayload(payload)
+}
 
 module.exports = [{
   method: 'GET',
