@@ -15,6 +15,7 @@ const toWeekId = (entry) => {
       entry.week ||
       entry.weekNo ||
       entry.gameWeek ||
+      entry.gameweek ||
       entry.gw ||
       entry.round
     )
@@ -123,7 +124,8 @@ const fetchExternalWinners = async (url) => {
   })
 
   if (!response.ok) {
-    throw new Error(`Winners endpoint returned ${response.status}`)
+    const body = await response.text().catch(() => '')
+    throw new Error(`Winners endpoint returned ${response.status}: ${body.slice(0, 200)}`)
   }
 
   const payload = await response.json()
@@ -154,7 +156,13 @@ module.exports = [{
         const external = await fetchExternalWinners(config.winnersApiUrl)
         weeklyWinnersByWeek = sortByWeek(external.weeklyWinnersByWeek)
         jackpotWinnersByWeek = sortByWeek(external.jackpotWinnersByWeek)
-      } catch (_error) {
+      } catch (error) {
+        console.error('[winners-feed]', {
+          url: config.winnersApiUrl,
+          message: error && error.message,
+          cause: error && error.cause && error.cause.message,
+          code: error && (error.code || (error.cause && error.cause.code))
+        })
         warning = 'Could not load winners feed from WINNERS_API_URL.'
         source = 'none'
       }
