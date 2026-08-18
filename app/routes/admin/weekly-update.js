@@ -14,6 +14,7 @@ const emptyUpdate = {
 	generatedAt: null,
 	currentWeek: null,
 	latestRecordedWeek: null,
+	weeks: [],
 	weeklyWinners: [],
 	jackpotWinners: [],
 	alreadyRecorded: false,

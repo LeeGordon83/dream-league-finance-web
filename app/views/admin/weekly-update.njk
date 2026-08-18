@@ -70,21 +70,60 @@
     </div>
   {% endif %}
 
-  {% if update.latestRecordedWeek %}
-    {% if update.alreadyRecorded %}
-      <div class="alert alert-success">
-        Weekly winnings for week {{ update.latestRecordedWeek }} have already been recorded.
+  {% if update.weeks and update.weeks.length %}
+    <div class="card mb-3">
+      <div class="card-header">Weekly Winnings by Week</div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <thead>
+            <tr>
+              <th>Week</th>
+              <th>Winners (feed)</th>
+              <th>Recorded</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for week in update.weeks %}
+            <tr>
+              <td>{{ week.weekId }}</td>
+              <td>{{ week.feedWinners | join(', ') }}</td>
+              <td>{% if week.recordedWinners.length %}{{ week.recordedWinners | join(', ') }}{% else %}-{% endif %}</td>
+              <td>
+                {% if week.status == 'in-sync' %}
+                  <span class="badge badge-success">In sync</span>
+                {% elif week.status == 'changed' %}
+                  <span class="badge badge-warning">Changed</span>
+                {% else %}
+                  <span class="badge badge-secondary">Not recorded</span>
+                {% endif %}
+              </td>
+              <td class="text-right">
+                {% if week.status != 'in-sync' %}
+                  <form method="POST" action="/admin/weekly-update" class="mb-0">
+                    <input type="hidden" name="crumb" value="{{ crumb }}"/>
+                    <input type="hidden" name="weekId" value="{{ week.weekId }}"/>
+                    {% if week.status == 'changed' %}
+                      <button type="submit" class="btn btn-sm btn-warning"
+                        onclick="return confirm('Replace the recorded winners for week {{ week.weekId }} with: {{ week.feedWinners | join(', ') }}?')">
+                        Replace
+                      </button>
+                    {% else %}
+                      <button type="submit" class="btn btn-sm btn-primary"
+                        onclick="return confirm('Record weekly winnings for week {{ week.weekId }}?')">
+                        Record
+                      </button>
+                    {% endif %}
+                  </form>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
-    {% elif update.weeklyWinners and update.weeklyWinners.length %}
-      <form method="POST" action="/admin/weekly-update" class="mb-3">
-        <input type="hidden" name="crumb" value="{{ crumb }}"/>
-        <input type="hidden" name="weekId" value="{{ update.latestRecordedWeek }}"/>
-        <button type="submit" class="btn btn-primary"
-          onclick="return confirm('Record weekly winnings for week {{ update.latestRecordedWeek }}?')">
-          Record Weekly Winnings for Week {{ update.latestRecordedWeek }}
-        </button>
-      </form>
-    {% endif %}
+    </div>
   {% endif %}
 
   {% if update.hasWeeklyForCurrentWeek == false %}
