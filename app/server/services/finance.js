@@ -1448,6 +1448,16 @@ const createWeeklyTransaction = async ({ managerSelect, weekId, transactionDate,
   }
 }
 
+const hasWeeklyTransactionForWeek = async (weekId) => {
+  const target = Number(weekId)
+  const transactions = await readTransactions()
+
+  return transactions.some(transaction =>
+    toTransactionType(transaction) === 'Weekly' &&
+    Number(transactionWeekNo(transaction)) === target
+  )
+}
+
 const createFiverTransaction = async ({ managerSelect, amountWon, weekId, transactionDate, notes }) => {
   return createPayoutTransaction({
     managerSelect,
@@ -1935,6 +1945,7 @@ module.exports = {
   getAdhocManagers,
   createAdhocTransaction,
   createWeeklyTransaction,
+  hasWeeklyTransactionForWeek,
   createFiverTransaction,
   getJackpotAmountForWeek,
   createJackpotTransaction,

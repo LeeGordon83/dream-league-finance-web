@@ -1,3 +1,4 @@
+const joi = require('joi')
 const config = require('../../../config')
 const financeService = require('../../services/finance')
 const { requireAdmin } = require('../../auth')
@@ -44,6 +45,8 @@ const readNames = (entry) => {
 
   return []
 }
+
+const normalizeName = (value) => String(value || '').trim().toLowerCase().replace(/\s+/g, ' ')
 
 const readWinnerType = (entry) => {
   const raw = String(
@@ -177,6 +180,10 @@ module.exports = [{
       ? jackpotWinnersByWeek.find(entry => Number(entry.weekId) === Number(latestWeekly.weekId))
       : null
 
+    const alreadyRecorded = latestWeekly
+      ? await financeService.hasWeeklyTransactionForWeek(Number(latestWeekly.weekId))
+      : false
+
     return h.response({
       generatedAt: new Date().toISOString(),
       source,
@@ -185,7 +192,73 @@ module.exports = [{
       latestRecordedWeek: latestWeekly ? Number(latestWeekly.weekId) : null,
       weeklyWinners: latestWeekly ? (latestWeekly.managerNames || []) : [],
       jackpotWinners: latestJackpot ? (latestJackpot.managerNames || []) : [],
+      alreadyRecorded,
       hasWeeklyForCurrentWeek: currentWeek ? Boolean(latestWeekly && Number(latestWeekly.weekId) === currentWeek) : null
     }).code(200)
+  }
+}, {
+  method: 'POST',
+  path: '/admin/weekly-update',
+  config: {
+    auth: 'jwt',
+    pre: [requireAdmin],
+    validate: {
+      payload: joi.object({
+        weekId: joi.number().integer().min(1).required()
+      })
+    }
+  },
+  handler: async (request, h) => {
+    const weekId = Number(request.payload.weekId)
+
+    if (!config.winnersApiUrl) {
+      return h.response({ error: 'WINNERS_API_URL is not configured.' }).code(400)
+    }
+
+    if (await financeService.hasWeeklyTransactionForWeek(weekId)) {
+      return h.response({ error: `Weekly winnings for week ${weekId} have already been recorded.` }).code(409)
+    }
+
+    let external
+    try {
+      external = await fetchExternalWinners(config.winnersApiUrl)
+    } catch (error) {
+      console.error('[winners-feed]', { url: config.winnersApiUrl, message: error && error.message })
+      return h.response({ error: 'Could not load winners feed from WINNERS_API_URL.' }).code(502)
+    }
+
+    const entry = external.weeklyWinnersByWeek.find(item => Number(item.weekId) === weekId)
+    const winnerNames = entry ? (entry.managerNames || []) : []
+
+    if (!winnerNames.length) {
+      return h.response({ error: `No weekly winners found in the feed for week ${weekId}.` }).code(400)
+    }
+
+    const managers = await financeService.getAdhocManagers()
+    const lookup = managers.reduce((map, manager) => {
+      map[normalizeName(manager.name)] = manager.managerId
+      return map
+    }, {})
+
+    const resolved = winnerNames.map(name => ({ name, managerId: lookup[normalizeName(name)] || null }))
+    const unmatched = resolved.filter(item => !item.managerId).map(item => item.name)
+
+    if (unmatched.length) {
+      return h.response({
+        error: `No matching manager for: ${unmatched.join(', ')}.`
+      }).code(400)
+    }
+
+    const weeks = await financeService.getGameWeeks()
+    const week = weeks.find(item => Number(item.weekId) === weekId)
+
+    const result = await financeService.createWeeklyTransaction({
+      managerSelect: resolved.map(item => item.managerId),
+      weekId,
+      transactionDate: (week && week.end) || new Date(),
+      notes: `Weekly winnings for week ${weekId}`
+    })
+
+    return h.response({ ...result, weekId, winners: winnerNames }).code(201)
   }
 }]
