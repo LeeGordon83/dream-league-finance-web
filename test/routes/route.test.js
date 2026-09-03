@@ -2,7 +2,6 @@
 // Must be set before the app config module is first required.
 process.env.PORT = process.env.PORT || '3100'
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-secret'
-process.env.API_HOST = `http://localhost:${process.env.PORT}/api`
 process.env.MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/dream-league-finance'
 
 const jwt = require('jsonwebtoken')

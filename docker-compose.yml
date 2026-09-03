@@ -12,7 +12,6 @@ services:
       NODE_ENV: development
       PORT: 3000
       JWT_SECRET: ${JWT_SECRET:-local-dev-secret}
-      API_HOST: http://localhost:3000/api
       MONGODB_URI: mongodb://dream-league-finance-mongo:27017/dream-league-finance
     depends_on:
       - dream-league-finance-mongo
