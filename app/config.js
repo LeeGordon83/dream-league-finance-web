@@ -10,7 +10,7 @@ const schema = joi.object().keys({
     secret: joi.string(),
     expiryInMinutes: joi.number().default(43800)
   }),
-  apiHost: joi.string().default('http://localhost:3000/api'),
+  apiHost: joi.string().optional(),
   mongoUri: joi.string().required(),
   winnersApiUrl: joi.string().uri().allow('', null).default(''),
   cookieOptions: joi.object({
@@ -51,6 +51,9 @@ const config = {
 const { error, value } = schema.validate(config)
 
 value.isDev = value.env === 'development'
+// The API is served in-process, so stay on loopback: routing via the public
+// hostname sends the request back through the edge, which rate-limits it.
+value.apiHost = `http://localhost:${value.port}/api`
 value.cookieOptionsIdentity = {
   ...value.cookieOptions,
   ttl: 1000 * 60 * 60 * 24 * 30, // 30 days
