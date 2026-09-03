@@ -31,14 +31,14 @@
             {% for month in paidIn.months %}
               <td style="text-align:center; border-right: 1px solid black;">
                 {% for transaction in manager.groupedTransactions %}
-                  {% if transaction.monthName == month %}
+                  {% if transaction.monthName == month.monthName %}
                     £{{ transaction.paidInSubtotal }}
                   {% endif %}
                 {% endfor %}
               </td>
               <td style="text-align:center; border-right: 1px solid black;">
                 {% for transaction in manager.groupedTransactions %}
-                  {% if transaction.monthName == month %}
+                  {% if transaction.monthName == month.monthName %}
                     £{{ transaction.wonSubtotal }}
                   {% endif %}
                 {% endfor %}

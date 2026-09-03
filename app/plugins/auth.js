@@ -14,7 +14,10 @@ module.exports = {
       server.auth.strategy('jwt', 'jwt', {
         key: jwtConfig.secret,
         validate,
-        cookieKey: 'dl_token'
+        cookieKey: 'dl_token',
+        verifyOptions: {
+          algorithms: ['HS256']
+        }
       })
       server.auth.default({ strategy: 'jwt', mode: 'try' })
     }

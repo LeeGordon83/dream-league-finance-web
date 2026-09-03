@@ -5,6 +5,11 @@ module.exports = {
       server.ext('onPreResponse', (request, h) => {
         const response = request.response
 
+        // API routes must return their original JSON/Boom response, not an HTML view.
+        if (request.path.startsWith('/api/')) {
+          return h.continue
+        }
+
         if (response.isBoom) {
           // An error was raised during
           // processing the request

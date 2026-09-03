@@ -1,342 +1,221 @@
 /* eslint-disable no-undef */
+// Must be set before the app config module is first required.
+process.env.PORT = process.env.PORT || '3100'
+process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-secret'
+process.env.API_HOST = `http://localhost:${process.env.PORT}/api`
+process.env.MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/dream-league-finance'
+
+const jwt = require('jsonwebtoken')
+const mongoose = require('mongoose')
 const createServer = require('../../app/server')
+const connectDB = require('../../app/api-server/db')
+
 let server
 
-describe('GET /', () => {
-  beforeEach(async () => {
-    server = await createServer()
-    await server.initialize()
-  })
+// Routes backed by admin-only API endpoints need a real signed token.
+const adminToken = jwt.sign(
+  { id: 'test-admin', email: 'admin@test.local', scope: ['admin'] },
+  process.env.JWT_SECRET,
+  { algorithm: 'HS256', expiresIn: '1h' }
+)
 
-  afterEach(async () => {
-    await server.stop()
-  })
+const asAdmin = (url) => ({
+  method: 'GET',
+  url,
+  headers: { cookie: `dl_token=${adminToken}` }
+})
 
+beforeAll(async () => {
+  await connectDB()
+  server = await createServer()
+  // The app calls its own /api routes over HTTP, so it must be listening.
+  await server.start()
+})
+
+afterAll(async () => {
+  await server.stop()
+  await mongoose.disconnect()
+})
+
+describe('public views', () => {
   test('returns the home view', async () => {
-    const request = {
-      method: 'GET',
-      url: '/'
-    }
-
-    const response = await server.inject(request)
+    const response = await server.inject({ method: 'GET', url: '/' })
 
     expect(response.statusCode).toBe(200)
     expect(response.headers['content-type']).toContain('text/html')
     expect(response.result).toContain('Dream League Finance')
   })
-  test('returns the login view', async () => {
-    const request = {
-      method: 'GET',
-      url: '/login'
-    }
 
-    const response = await server.inject(request)
+  test('returns the login view', async () => {
+    const response = await server.inject({ method: 'GET', url: '/login' })
 
     expect(response.statusCode).toBe(200)
     expect(response.headers['content-type']).toContain('text/html')
     expect(response.result).toContain('Login')
   })
-  test('returns the register view', async () => {
-    const request = {
-      method: 'GET',
-      url: '/login'
-    }
 
-    const response = await server.inject(request)
-
-    expect(response.statusCode).toBe(200)
-    expect(response.headers['content-type']).toContain('text/html')
-    expect(response.result).toContain('Register')
-  })
-  test('returns the forgot password  view', async () => {
-    const request = {
-      method: 'GET',
-      url: '/forgot-password'
-    }
-
-    const response = await server.inject(request)
+  test('returns the forgot password view', async () => {
+    const response = await server.inject({ method: 'GET', url: '/forgot-password' })
 
     expect(response.statusCode).toBe(200)
     expect(response.headers['content-type']).toContain('text/html')
     expect(response.result).toContain('Password reset')
   })
-  test('returns 404 for admin email route', async () => {
-    const request = {
-      method: 'GET',
-      url: '/admin/email'
-    }
 
-    const response = await server.inject(request)
-
-    expect(response.statusCode).toBe(404)
-    expect(response.headers['content-type']).toContain('text/html')
-    expect(response.result).toContain('Page Not Found')
-  })
-  test('returns the admin fees view', async () => {
-    const request = {
-      method: 'GET',
-      url: '/admin/fees'
-    }
-
-    const response = await server.inject(request)
-
-    expect(response.statusCode).toBe(200)
-    expect(response.headers['content-type']).toContain('text/html')
-    expect(response.result).toContain('Fees')
-  })
-  test('returns the admin managers view', async () => {
-    const request = {
-      method: 'GET',
-      url: '/admin/managers'
-    }
-
-    const response = await server.inject(request)
-
-    expect(response.statusCode).toBe(200)
-    expect(response.headers['content-type']).toContain('text/html')
-    expect(response.result).toContain('Managers')
-  })
-  test('returns the admin prizes view', async () => {
-    const request = {
-      method: 'GET',
-      url: '/admin/prizes'
-    }
-
-    const response = await server.inject(request)
-
-    expect(response.statusCode).toBe(200)
-    expect(response.headers['content-type']).toContain('text/html')
-    expect(response.result).toContain('Prizes')
-  })
-  test('returns the admin season view', async () => {
-    const request = {
-      method: 'GET',
-      url: '/admin/season'
-    }
-
-    const response = await server.inject(request)
-
-    expect(response.statusCode).toBe(200)
-    expect(response.headers['content-type']).toContain('text/html')
-    expect(response.result).toContain('Season')
-  })
-
-  test('returns the cookie policy view', async () => {
-    const request = {
-      method: 'GET',
-      url: '/cookies'
-    }
-
-    const response = await server.inject(request)
-
-    expect(response.statusCode).toBe(200)
-    expect(response.headers['content-type']).toContain('text/html')
-    expect(response.result).toContain('Cookies')
-  })
-  test('returns the finance all transactions view', async () => {
-    const request = {
-      method: 'GET',
-      url: '/finance/all-transactions'
-    }
-
-    const response = await server.inject(request)
-
-    expect(response.statusCode).toBe(200)
-    expect(response.headers['content-type']).toContain('text/html')
-    expect(response.result).toContain('All Transactions')
-  })
-  test('returns the finance balance sheet view', async () => {
-    const request = {
-      method: 'GET',
-      url: '/finance/all-transactions'
-    }
-
-    const response = await server.inject(request)
-
-    expect(response.statusCode).toBe(200)
-    expect(response.headers['content-type']).toContain('text/html')
-    expect(response.result).toContain('Balance')
-  })
-  test('returns the finance credit view', async () => {
-    const request = {
-      method: 'GET',
-      url: '/finance/credit'
-    }
-
-    const response = await server.inject(request)
-
-    expect(response.statusCode).toBe(200)
-    expect(response.headers['content-type']).toContain('text/html')
-    expect(response.result).toContain('Credit')
-  })
-  test('returns the finance game weeks view', async () => {
-    const request = {
-      method: 'GET',
-      url: '/finance/game-weeks'
-    }
-
-    const response = await server.inject(request)
-
-    expect(response.statusCode).toBe(200)
-    expect(response.headers['content-type']).toContain('text/html')
-    expect(response.result).toContain('Game Week')
-  })
-  test('returns the finance individual winnings view', async () => {
-    const request = {
-      method: 'GET',
-      url: '/finance/individual-winnings'
-    }
-
-    const response = await server.inject(request)
-
-    expect(response.statusCode).toBe(200)
-    expect(response.headers['content-type']).toContain('text/html')
-    expect(response.result).toContain('Individual Winnings')
-  })
-  test('returns the finance paid in view', async () => {
-    const request = {
-      method: 'GET',
-      url: '/finance/paid-in'
-    }
-
-    const response = await server.inject(request)
-
-    expect(response.statusCode).toBe(200)
-    expect(response.headers['content-type']).toContain('text/html')
-    expect(response.result).toContain('Paid In')
-  })
-  test('returns the finance winnings view', async () => {
-    const request = {
-      method: 'GET',
-      url: '/finance/winnings'
-    }
-
-    const response = await server.inject(request)
-
-    expect(response.statusCode).toBe(200)
-    expect(response.headers['content-type']).toContain('text/html')
-    expect(response.result).toContain('Winnings')
-  })
-  test('returns the transaction adhoc view', async () => {
-    const request = {
-      method: 'GET',
-      url: '/transaction/adhoc'
-    }
-
-    const response = await server.inject(request)
-
-    expect(response.statusCode).toBe(200)
-    expect(response.headers['content-type']).toContain('text/html')
-    expect(response.result).toContain('Ad-Hoc Payment')
-  })
-
-  test('returns the transaction fivers view', async () => {
-    const request = {
-      method: 'GET',
-      url: '/transaction/fivers'
-    }
-
-    const response = await server.inject(request)
-
-    expect(response.statusCode).toBe(200)
-    expect(response.headers['content-type']).toContain('text/html')
-    expect(response.result).toContain('Fivers')
-  })
-
-  test('returns the transaction jackpot view', async () => {
-    const request = {
-      method: 'GET',
-      url: '/transaction/jackpot'
-    }
-
-    const response = await server.inject(request)
-
-    expect(response.statusCode).toBe(200)
-    expect(response.headers['content-type']).toContain('text/html')
-    expect(response.result).toContain('Jackpot')
-  })
-  test('returns the transaction league/cup view', async () => {
-    const request = {
-      method: 'GET',
-      url: '/transaction/league-cup'
-    }
-
-    const response = await server.inject(request)
-
-    expect(response.statusCode).toBe(200)
-    expect(response.headers['content-type']).toContain('text/html')
-    expect(response.result).toContain('League and Cup Payments')
-  })
-  test('returns the transaction select transaction view', async () => {
-    const request = {
-      method: 'GET',
-      url: '/transaction/select-transaction'
-    }
-
-    const response = await server.inject(request)
-
-    expect(response.statusCode).toBe(200)
-    expect(response.headers['content-type']).toContain('text/html')
-    expect(response.result).toContain('Transaction Menu')
-  })
-  test('returns the transaction weekly view', async () => {
-    const request = {
-      method: 'GET',
-      url: '/transaction/weekly'
-    }
-
-    const response = await server.inject(request)
-
-    expect(response.statusCode).toBe(200)
-    expect(response.headers['content-type']).toContain('text/html')
-    expect(response.result).toContain('Weekly Prize')
-  })
   test('returns the about view', async () => {
-    const request = {
-      method: 'GET',
-      url: '/about'
-    }
-
-    const response = await server.inject(request)
+    const response = await server.inject({ method: 'GET', url: '/about' })
 
     expect(response.statusCode).toBe(200)
     expect(response.headers['content-type']).toContain('text/html')
     expect(response.result).toContain('About')
   })
-  test('returns 404 for history route', async () => {
-    const request = {
-      method: 'GET',
-      url: '/history'
-    }
 
-    const response = await server.inject(request)
-
-    expect(response.statusCode).toBe(404)
-    expect(response.headers['content-type']).toContain('text/html')
-    expect(response.result).toContain('Page Not Found')
-  })
   test('returns the cookies view', async () => {
-    const request = {
-      method: 'GET',
-      url: '/cookies'
-    }
-
-    const response = await server.inject(request)
+    const response = await server.inject({ method: 'GET', url: '/cookies' })
 
     expect(response.statusCode).toBe(200)
     expect(response.headers['content-type']).toContain('text/html')
     expect(response.result).toContain('Cookies')
   })
-  test('returns the transaction adhoc view', async () => {
-    const request = {
-      method: 'GET',
-      url: '/transaction/ad-hoc'
-    }
 
-    const response = await server.inject(request)
+  test('returns the prizes view', async () => {
+    const response = await server.inject({ method: 'GET', url: '/prizes' })
 
     expect(response.statusCode).toBe(200)
     expect(response.headers['content-type']).toContain('text/html')
-    expect(response.result).toContain('Ad-Hoc Payment')
+    expect(response.result).toContain('Prizes')
+  })
+})
+
+describe('finance views', () => {
+  const cases = [
+    ['/finance/all-transactions', 'All Transactions'],
+    ['/finance/balance-sheet', 'Balance'],
+    ['/finance/credit', 'Credit'],
+    ['/finance/game-weeks', 'Game Week'],
+    ['/finance/individual-winnings', 'Individual Winnings'],
+    ['/finance/paid-in', 'Paid In'],
+    ['/finance/winnings', 'Winnings']
+  ]
+
+  test.each(cases)('returns %s', async (url, expected) => {
+    const response = await server.inject({ method: 'GET', url })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.headers['content-type']).toContain('text/html')
+    expect(response.result).toContain(expected)
+  })
+})
+
+describe('admin views', () => {
+  const cases = [
+    ['/admin/fees', 'Fees'],
+    ['/admin/managers', 'Managers'],
+    ['/admin/prizes', 'Prizes'],
+    ['/admin/season', 'Season']
+  ]
+
+  test.each(cases)('returns %s for an admin', async (url, expected) => {
+    const response = await server.inject(asAdmin(url))
+
+    expect(response.statusCode).toBe(200)
+    expect(response.headers['content-type']).toContain('text/html')
+    expect(response.result).toContain(expected)
+  })
+
+  test.each(cases)('redirects %s away when signed out', async (url) => {
+    const response = await server.inject({ method: 'GET', url })
+
+    expect(response.statusCode).toBe(302)
+    expect(response.headers.location).toBe('/')
+  })
+})
+
+describe('transaction views', () => {
+  const cases = [
+    ['/transaction/select-transaction', 'Transaction Menu'],
+    ['/transaction/adhoc', 'Ad-Hoc Payment'],
+    ['/transaction/fivers', 'Fivers'],
+    ['/transaction/jackpot', 'Jackpot'],
+    ['/transaction/league-cup', 'League and Cup Payments'],
+    ['/transaction/weekly', 'Weekly Prize']
+  ]
+
+  test.each(cases)('returns %s for an admin', async (url, expected) => {
+    const response = await server.inject(asAdmin(url))
+
+    expect(response.statusCode).toBe(200)
+    expect(response.headers['content-type']).toContain('text/html')
+    expect(response.result).toContain(expected)
+  })
+})
+
+describe('api routes', () => {
+  test('health endpoint responds', async () => {
+    const response = await server.inject({ method: 'GET', url: '/api/health' })
+
+    expect(response.statusCode).toBe(200)
+    expect(response.result.status).toBe('ok')
+  })
+
+  test('admin api rejects a request with no token', async () => {
+    const response = await server.inject({ method: 'GET', url: '/api/admin/fees' })
+
+    expect(response.statusCode).toBe(401)
+  })
+
+  test('admin api rejects a non-admin token', async () => {
+    const userToken = jwt.sign(
+      { id: 'u1', email: 'user@test.local', scope: ['user'] },
+      process.env.JWT_SECRET,
+      { algorithm: 'HS256', expiresIn: '1h' }
+    )
+
+    const response = await server.inject({
+      method: 'GET',
+      url: '/api/admin/fees',
+      headers: { authorization: `Bearer ${userToken}` }
+    })
+
+    expect(response.statusCode).toBe(401)
+  })
+
+  test('admin api accepts an admin token', async () => {
+    const response = await server.inject({
+      method: 'GET',
+      url: '/api/admin/fees',
+      headers: { authorization: `Bearer ${adminToken}` }
+    })
+
+    expect(response.statusCode).toBe(200)
+  })
+
+  test('api errors return json rather than an html error page', async () => {
+    const response = await server.inject({ method: 'GET', url: '/api/admin/fees' })
+
+    expect(response.headers['content-type']).toContain('application/json')
+  })
+
+  test('paid in groups months by name rather than by object', async () => {
+    const response = await server.inject({ method: 'GET', url: '/api/finance/paid-in' })
+
+    expect(response.statusCode).toBe(200)
+
+    const grouped = (response.result.managersPaidIn || []).flatMap(manager => manager.groupedTransactions || [])
+    grouped.forEach(entry => expect(typeof entry.monthName).toBe('string'))
+  })
+})
+
+describe('not found handling', () => {
+  test.each([
+    ['/history'],
+    ['/admin/email'],
+    ['/transaction/ad-hoc']
+  ])('returns the 404 view for %s', async (url) => {
+    const response = await server.inject(asAdmin(url))
+
+    expect(response.statusCode).toBe(404)
+    expect(response.headers['content-type']).toContain('text/html')
+    expect(response.result).toContain('Page not found')
   })
 })

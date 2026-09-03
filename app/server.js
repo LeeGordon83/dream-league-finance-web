@@ -23,6 +23,9 @@ async function createServer () {
   await server.register(require('hapi-auth-jwt2'))
   await server.register(require('./plugins/auth'))
   await server.register(require('./plugins/qs'))
+  await server.register(require('./api-server/plugins/router'), {
+    routes: { prefix: '/api' }
+  })
   await server.register(require('./plugins/router'))
   await server.register(require('./plugins/errors'))
   await server.register(require('./plugins/crumb'))
