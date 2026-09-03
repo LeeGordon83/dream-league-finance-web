@@ -711,16 +711,32 @@ const getIndividualWinnings = async () => {
   })
 }
 
+const weekIdsWithWeeklyPayout = (transactions) => {
+  return new Set(
+    transactions
+      .filter(transaction => toTransactionType(transaction) === 'Weekly')
+      .map(transaction => Number(transactionWeekNo(transaction)))
+      .filter(weekNo => weekNo > 0)
+  )
+}
+
 const getGameWeeks = async () => {
-  const weeks = await readWeeks()
+  const [weeks, transactions] = await Promise.all([readWeeks(), readTransactions()])
+  const paidWeeks = weekIdsWithWeeklyPayout(transactions)
 
   return weeks
-    .map(week => ({
-      weekId: week.weekNo || week.WeekNo || 0,
-      start: week.weekStartDate || week.WeekStartDate || null,
-      end: week.weekEndDate || week.WeekEndDate || null,
-      complete: (week.weekCompleted ?? week.WeekCompleted) ? 'checked' : ''
-    }))
+    .map(week => {
+      const weekId = week.weekNo || week.WeekNo || 0
+      // A week counts as complete once its weekly winnings have been paid out.
+      const complete = paidWeeks.has(Number(weekId)) || Boolean(week.weekCompleted ?? week.WeekCompleted)
+
+      return {
+        weekId,
+        start: week.weekStartDate || week.WeekStartDate || null,
+        end: week.weekEndDate || week.WeekEndDate || null,
+        complete: complete ? 'checked' : ''
+      }
+    })
     .sort((a, b) => a.weekId - b.weekId)
 }
 
