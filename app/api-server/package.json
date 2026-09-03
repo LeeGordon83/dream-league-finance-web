@@ -1,0 +1,40 @@
+{
+  "name": "dreamleaguefinance-api",
+  "version": "1.0.0",
+  "description": "backend services for dream league finance",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "seed:admin": "node scripts/seed-admin.js",
+    "test": "npm run test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LeeGordon83/dreamleaguefinance-api.git"
+  },
+  "author": "Lee Gordon",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/LeeGordon83/dreamleaguefinance-api/issues"
+  },
+  "homepage": "https://github.com/LeeGordon83/dreamleaguefinance-api#readme",
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "standard": "^17.1.0"
+  },
+  "dependencies": {
+    "@hapi/boom": "^10.0.1",
+    "@hapi/hapi": "^21.3.2",
+    "@hapi/inert": "^7.1.0",
+    "@hapi/vision": "^7.0.2",
+    "bcrypt": "^5.1.0",
+    "blipp": "^4.0.2",
+    "hapi-auth-jwt2": "^10.4.0",
+    "hapi-pino": "^12.1.0",
+    "joi": "^17.9.2",
+    "jsonwebtoken": "^9.0.2",
+    "moment": "^2.29.4",
+    "mongoose": "^8.0.0"
+  }
+}
