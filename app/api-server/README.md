@@ -1,2 +1,0 @@
-# dreamleaguefinance-api
-Backend Services

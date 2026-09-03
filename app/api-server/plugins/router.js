@@ -1,4 +1,5 @@
 const routes = [].concat(
+  require('../routes/health'),
   require('../routes/identity/legacy'),
   require('../routes/identity/validate'),
   require('../routes/finance/paid-in'),
@@ -34,7 +35,7 @@ const routes = [].concat(
 
 module.exports = {
   plugin: {
-    name: 'router',
+    name: 'api-router',
     register: (server, _options) => {
       server.route(routes)
     }

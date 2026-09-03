@@ -7,9 +7,12 @@ const schema = joi.object().keys({
   env: joi.string().valid(...envs).default(envs[0]),
   appName: joi.string().default('Dream League Finance'),
   jwtConfig: joi.object({
-    secret: joi.string()
+    secret: joi.string(),
+    expiryInMinutes: joi.number().default(43800)
   }),
-  apiHost: joi.string().default('http://localhost:3001'),
+  apiHost: joi.string().default('http://localhost:3000/api'),
+  mongoUri: joi.string().required(),
+  winnersApiUrl: joi.string().uri().allow('', null).default(''),
   cookieOptions: joi.object({
     ttl: joi.number().default(1000 * 60 * 60 * 24 * 365), // 1 year
     encoding: joi.string().valid('base64json').default('base64json'),
@@ -27,9 +30,12 @@ const config = {
   env: process.env.NODE_ENV,
   appName: process.env.APP_NAME,
   jwtConfig: {
-    secret: process.env.JWT_SECRET
+    secret: process.env.JWT_SECRET,
+    expiryInMinutes: process.env.JWT_EXPIRY_IN_MINUTES
   },
   apiHost: process.env.API_HOST,
+  mongoUri: process.env.MONGODB_URI,
+  winnersApiUrl: process.env.WINNERS_API_URL,
   cookieOptions: {
     ttl: process.env.COOKIE_TTL,
     encoding: process.env.COOKIE_ENCODING,

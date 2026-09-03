@@ -1,9 +1,8 @@
-const api = require('../api')
-
-const validate = async (decoded, _request, _h) => {
-  return api.post('/validate', {
-    token: decoded
-  })
+const validate = (decoded, _request, _h) => {
+  return {
+    isValid: true,
+    credentials: decoded
+  }
 }
 
 module.exports = validate

@@ -15,7 +15,7 @@ const mongoose = require('mongoose')
 
 const SALT_ROUNDS = 10
 
-const Manager = require('../app/server/models/manager')
+const Manager = require('../models/manager')
 
 const seedAdmin = async () => {
   try {

@@ -8,7 +8,8 @@ services:
       - '3000:3000'
     environment: 
       JWT_SECRET: secret
-      API_HOST: http://dream-league-finance-api:3001
+      API_HOST: http://localhost:3000/api
+      MONGODB_URI: mongodb://dream-league-finance-mongo:27017/dream-league-finance
     networks:
       - dream-league-finance-network
 
