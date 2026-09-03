@@ -1,19 +1,33 @@
-version: '3.8'
 services:
   dream-league-finance-web:
-    build: .
+    build:
+      context: .
+      target: production
     image: dream-league-finance-web
     container_name: dream-league-finance-web
     ports:
       - '3000:3000'
-    environment: 
-      JWT_SECRET: secret
+    environment:
+      # Not 'production' locally: that flags cookies as Secure, which browsers drop over plain http.
+      NODE_ENV: development
+      PORT: 3000
+      JWT_SECRET: ${JWT_SECRET:-local-dev-secret}
       API_HOST: http://localhost:3000/api
       MONGODB_URI: mongodb://dream-league-finance-mongo:27017/dream-league-finance
-    networks:
-      - dream-league-finance-network
+    depends_on:
+      - dream-league-finance-mongo
+    restart: unless-stopped
 
-networks:
-  dream-league-finance-network:
+  dream-league-finance-mongo:
+    image: mongo:7
+    container_name: dream-league-finance-mongo
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo_data:/data/db
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
     external: true
-    name: dream-league-finance-network
+    name: dream-league-finance-api_mongo_data
