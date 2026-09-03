@@ -1,4 +1,4 @@
-const config = require('../').cookieOptions
+const config = require('../config').cookieOptions
 
 const createDefaultPolicy = (h) => {
   const cookiesPolicy = { confirmed: false, essential: true, analytics: false }
