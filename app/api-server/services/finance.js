@@ -279,7 +279,7 @@ const createGroupedTransactions = (transactions, months) => {
     })
 
     return {
-      monthName: month,
+      monthName: month.monthName,
       paidInSubtotal,
       wonSubtotal
     }

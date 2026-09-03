@@ -195,6 +195,15 @@ describe('api routes', () => {
 
     expect(response.headers['content-type']).toContain('application/json')
   })
+
+  test('paid in groups months by name rather than by object', async () => {
+    const response = await server.inject({ method: 'GET', url: '/api/finance/paid-in' })
+
+    expect(response.statusCode).toBe(200)
+
+    const grouped = (response.result.managersPaidIn || []).flatMap(manager => manager.groupedTransactions || [])
+    grouped.forEach(entry => expect(typeof entry.monthName).toBe('string'))
+  })
 })
 
 describe('not found handling', () => {
